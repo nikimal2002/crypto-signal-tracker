@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Signal Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230D1220'/%3E%3Cpolyline points='19 12 16 12 13.5 19 8.5 5 6 12 3 12' stroke='%23F0B429' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" defer></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">Signal Tracker</span>
+        <span class="logo-sub">5-signal crypto scanner</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="last-update" id="last-update-label">Non aggiornato</span>
+      <button id="btn-refresh" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <!-- Nav tabs -->
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-page="scanner" role="tab">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path></svg>
+      Scanner
+    </button>
+    <button class="nav-tab" data-page="portfolio" role="tab">
+      <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
+      Portfolio
+    </button>
+    <button class="nav-tab" data-page="alerts" role="tab">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      Alert
+    </button>
+    <button class="nav-tab" data-page="backtest-config" role="tab">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      Backtest
+    </button>
+    <button class="nav-tab" data-page="backtest" role="tab">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      Risultati
+    </button>
+    <button class="nav-tab" data-page="settings" role="tab">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      Impostazioni
+    </button>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- ── SCANNER ── -->
+    <div id="page-scanner" class="page active" role="tabpanel">
+      <div class="metric-grid" id="scanner-metrics">
+        <div class="metric"><div class="metric-label">Asset monitorati</div><div class="metric-value">—</div></div>
+        <div class="metric"><div class="metric-label">Segnali forti</div><div class="metric-value">—</div></div>
+        <div class="metric"><div class="metric-label">Score medio</div><div class="metric-value">—</div></div>
+        <div class="metric"><div class="metric-label">BTC dominance</div><div class="metric-value">—</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          Filtri
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <select id="filter-signal" aria-label="Filtra per segnale">
+            <option value="all">Tutti i segnali</option>
+            <option value="dev">Dev activity</option>
+            <option value="whale">Whale flow</option>
+            <option value="tokenomics">Tokenomics</option>
+            <option value="catalyst">Catalyst</option>
+            <option value="rotation">Rotazione</option>
+          </select>
+          <select id="filter-score" aria-label="Score minimo">
+            <option value="0">Score minimo: tutti</option>
+            <option value="50">Score ≥ 50</option>
+            <option value="60">Score ≥ 60</option>
+            <option value="72">Score ≥ 72 (forti)</option>
+          </select>
+          <select id="sort-by" aria-label="Ordina per">
+            <option value="composite">Ordina: composite</option>
+            <option value="change24h">Ordina: variaz. 24h</option>
+            <option value="rank">Ordina: market cap rank</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="scanner-status" class="status-bar">
+        Premi <strong>Aggiorna</strong> per caricare i dati in tempo reale da CoinGecko.
+      </div>
+
+      <div id="scanner-list">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path></svg>
+          <p>Premi <strong>Aggiorna</strong> in alto a destra per caricare i dati.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PORTFOLIO ── -->
+    <div id="page-portfolio" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          Parametri portfolio
+        </div>
+        <div class="ctrl-row">
+          <label for="budget">Budget totale (€)</label>
+          <input type="number" id="budget" value="10000" min="100" step="500" style="width:110px">
+        </div>
+        <div class="ctrl-row">
+          <label for="risk-pct">Rischio per trade</label>
+          <input type="range" id="risk-pct" min="1" max="10" value="2" step="1" style="width:140px">
+          <span id="risk-val" class="val-display">2%</span>
+        </div>
+        <div class="ctrl-row">
+          <label for="max-pos">Posizioni massime</label>
+          <input type="range" id="max-pos" min="2" max="12" value="5" step="1" style="width:140px">
+          <span id="pos-val" class="val-display">5</span>
+        </div>
+      </div>
+
+      <div class="metric-grid" id="portfolio-metrics"></div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Allocazione suggerita
+        </div>
+        <div id="portfolio-output">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
+            <p>Carica i dati dallo scanner prima di costruire il portfolio.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ── -->
+    <div id="page-alerts" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Aggiungi alert
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="alert-coin" aria-label="Asset" style="flex:1;min-width:120px"></select>
+          <select id="alert-type" aria-label="Tipo alert" style="flex:1;min-width:160px">
+            <option value="score_above">Score sale sopra soglia</option>
+            <option value="score_below">Score scende sotto soglia</option>
+            <option value="whale_buy">Whale flow forte</option>
+            <option value="dev_spike">Dev activity spike</option>
+            <option value="catalyst">Catalyst segnale forte</option>
+          </select>
+          <input type="number" id="alert-threshold" value="72" min="0" max="100" aria-label="Soglia" style="width:70px">
+          <button id="btn-add-alert">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Aggiungi
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          Alert attivi
+        </div>
+        <div id="alert-list"><div style="font-size:13px;color:var(--text-secondary);padding:8px 0">Nessun alert configurato.</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Log segnali recenti
+        </div>
+        <div id="alert-log"><div style="font-size:13px;color:var(--text-secondary);padding:8px 0">Nessun segnale registrato.</div></div>
+      </div>
+    </div>
+
+    <!-- ── BACKTEST CONFIG ── -->
+    <div id="page-backtest-config" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="9" x2="9" y2="21"></line><line x1="15" y1="9" x2="15" y2="21"></line></svg>
+          Asset e periodo
+        </div>
+        <div class="ctrl-row">
+          <label for="bt-coin">Asset</label>
+          <select id="bt-coin">
+            <option value="bitcoin">Bitcoin (BTC)</option>
+            <option value="ethereum">Ethereum (ETH)</option>
+            <option value="solana">Solana (SOL)</option>
+            <option value="chainlink">Chainlink (LINK)</option>
+            <option value="avalanche-2">Avalanche (AVAX)</option>
+            <option value="polkadot">Polkadot (DOT)</option>
+          </select>
+        </div>
+        <div class="ctrl-row">
+          <label for="bt-days">Periodo storico</label>
+          <select id="bt-days">
+            <option value="90">90 giorni</option>
+            <option value="180" selected>180 giorni</option>
+            <option value="365">365 giorni</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          Segnali attivi
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Il composite score viene calcolato solo sui segnali selezionati.</p>
+        <div class="signal-toggle">
+          <button class="sig-btn bt-sig-btn on" data-sig="momentum">Momentum</button>
+          <button class="sig-btn bt-sig-btn on" data-sig="volume">Volume anomaly</button>
+          <button class="sig-btn bt-sig-btn on" data-sig="trend">MA cross</button>
+          <button class="sig-btn bt-sig-btn on" data-sig="reversal">Mean reversion</button>
+          <button class="sig-btn bt-sig-btn on" data-sig="volatility">Volatility squeeze</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          Parametri strategia
+        </div>
+        <div class="ctrl-row">
+          <label for="entry-thresh">Soglia entry (score)</label>
+          <input type="range" id="entry-thresh" min="40" max="85" value="60" step="5" style="width:140px">
+          <span id="et-val" class="val-display">60</span>
+        </div>
+        <div class="ctrl-row">
+          <label for="bt-stop">Stop loss</label>
+          <input type="range" id="bt-stop" min="3" max="20" value="8" step="1" style="width:140px">
+          <span id="bt-stop-val" class="val-display">8%</span>
+        </div>
+        <div class="ctrl-row">
+          <label for="bt-tp">Take profit</label>
+          <input type="range" id="bt-tp" min="5" max="60" value="20" step="5" style="width:140px">
+          <span id="bt-tp-val" class="val-display">20%</span>
+        </div>
+        <div class="ctrl-row">
+          <label for="bt-capital">Capitale iniziale (€)</label>
+          <input type="number" id="bt-capital" value="10000" step="1000" style="width:110px">
+        </div>
+        <div class="ctrl-row">
+          <label for="bt-possize">% per trade</label>
+          <input type="range" id="bt-possize" min="5" max="50" value="20" step="5" style="width:140px">
+          <span id="bt-possize-val" class="val-display">20%</span>
+        </div>
+      </div>
+
+      <div id="bt-status" class="status-bar">Configura i parametri e premi "Esegui backtest".</div>
+      <button id="bt-run-btn" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        Esegui backtest
+      </button>
+    </div>
+
+    <!-- ── BACKTEST RESULTS ── -->
+    <div id="page-backtest" class="page" role="tabpanel">
+      <div class="metric-grid" id="bt-metrics"></div>
+
+      <div class="card">
+        <div class="card-title">Equity curve vs buy &amp; hold</div>
+        <div class="chart-legend">
+          <div class="chart-legend-item"><div class="legend-line" style="background:#F0B429"></div> Strategia segnali</div>
+          <div class="chart-legend-item"><div class="legend-line" style="background:#5E6C8E;border-top:2px dashed #5E6C8E;height:0"></div> Buy &amp; hold</div>
+        </div>
+        <div class="bt-chart-wrap" style="height:260px"><canvas id="equity-chart" role="img" aria-label="Equity curve strategia vs buy and hold">Grafico equity curve</canvas></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="card">
+          <div class="card-title">Distribuzione rendimenti</div>
+          <div class="bt-chart-wrap" style="height:180px"><canvas id="returns-chart" role="img" aria-label="Distribuzione rendimenti per trade">Distribuzione rendimenti</canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Score composito nel tempo</div>
+          <div class="bt-chart-wrap" style="height:180px"><canvas id="score-chart" role="img" aria-label="Score composito con marker entry e exit">Score composito</canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Trade log completo</div>
+        <div style="overflow-x:auto">
+          <table class="trade-table">
+            <thead>
+              <tr>
+                <th style="width:40px">#</th>
+                <th style="width:80px">Entry</th>
+                <th style="width:80px">Exit</th>
+                <th style="width:80px">P&amp;L %</th>
+                <th style="width:80px">P&amp;L €</th>
+                <th style="width:50px">Score</th>
+                <th>Uscita</th>
+              </tr>
+            </thead>
+            <tbody id="bt-trade-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Multi-asset comparison -->
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="7 16 3 12 7 8"></polyline><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="17 8 21 12 17 16"></polyline></svg>
+          Confronto multi-asset
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Stessi parametri, tutti gli asset. Impiega ~10 secondi (rate limit CoinGecko).</p>
+        <button id="multi-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Esegui confronto multi-asset
+        </button>
+        <div id="multi-status" class="status-bar" style="margin-top:10px;display:none"></div>
+        <div id="compare-output" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div id="page-settings" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          Watchlist
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <input type="text" id="new-coin" placeholder="ID CoinGecko (es. solana)" style="flex:1;max-width:260px">
+          <button id="btn-add-coin">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Aggiungi
+          </button>
+        </div>
+        <div class="watchlist-pills" id="watchlist-pills"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          Pesi segnali
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Personalizza l'importanza di ciascun segnale nel composite score (0–100).</p>
+        <div id="weights-config"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+          Aggiornamento automatico
+        </div>
+        <div class="ctrl-row">
+          <label for="auto-refresh">Frequenza refresh</label>
+          <select id="auto-refresh">
+            <option value="0">Manuale</option>
+            <option value="300">Ogni 5 minuti</option>
+            <option value="900">Ogni 15 minuti</option>
+            <option value="3600">Ogni ora</option>
+          </select>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Attenzione: refresh frequenti consumano il rate limit di CoinGecko (30 req/min free tier).</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Info</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          Dati: <strong>CoinGecko API</strong> (gratuita, no API key richiesta).<br>
+          I segnali sono proxy computati su dati pubblici. Non costituiscono consulenza finanziaria.<br>
+          Alert e watchlist salvati in <code>localStorage</code> del browser.<br>
+          Backtest: prezzi storici reali, segnali calcolati su price/volume (dati whale e dev non disponibili per periodi passati senza abbonamento).
+        </p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Alert toast -->
+<div id="toast" role="alert" aria-live="polite"></div>
+
+<style>
+  #multi-status { display: flex !important; }
+</style>
+
+<script src="js/api.js"></script>
+<script src="js/signals.js"></script>
+<script src="js/backtest.js"></script>
+<script src="js/portfolio.js"></script>
+<script src="js/alerts.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
