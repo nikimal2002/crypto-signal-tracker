@@ -8,10 +8,495 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" defer></script>
+  <style>
+:root {
+  --bg: #0D1220;
+  --bg-elev: #131A2C;
+  --bg-card: #161E33;
+  --bg-hover: #1B2440;
+  --border: rgba(141, 159, 200, 0.13);
+  --border-strong: rgba(141, 159, 200, 0.25);
+  --text: #E9EDF7;
+  --text-secondary: #92A0C0;
+  --text-muted: #5E6C8E;
+  --amber: #F0B429;
+  --amber-dim: rgba(240, 180, 41, 0.14);
+  --teal: #2DD4A7;
+  --teal-dim: rgba(45, 212, 167, 0.13);
+  --coral: #F4694C;
+  --coral-dim: rgba(244, 105, 76, 0.13);
+  --red: #F4694C;
+  --blue: #5B9DFF;
+  --blue-dim: rgba(91, 157, 255, 0.13);
+  --purple: #9D8DF1;
+  --purple-dim: rgba(157, 141, 241, 0.13);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scrollbar-color: var(--text-muted) transparent; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 90% 50% at 50% -10%, rgba(91, 157, 255, 0.07), transparent);
+  background-repeat: no-repeat;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+/* ── Layout ─────────────────────────────────────────── */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+header {
+  background: rgba(13, 18, 32, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo { display: flex; align-items: center; gap: 11px; }
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--amber-dim);
+  border: 1px solid rgba(240, 180, 41, 0.35);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.logo-icon svg { width: 16px; height: 16px; stroke: var(--amber); fill: none; }
+.logo-icon::after {
+  content: '';
+  position: absolute;
+  top: -3px; right: -3px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: 2px solid var(--bg);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.logo-text { display: flex; flex-direction: column; line-height: 1.15; }
+.logo-name { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+.logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.last-update { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+/* ── Nav ────────────────────────────────────────────── */
+.nav-tabs {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  padding: 0 1.5rem;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  padding: 13px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.nav-tab:hover { color: var(--text-secondary); background: transparent; border-color: transparent transparent var(--border-strong); }
+.nav-tab.active, .nav-tab.active:hover { color: var(--amber); border-bottom-color: var(--amber); background: transparent; }
+.nav-tab svg { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+
+.main-content { flex: 1; max-width: 980px; width: 100%; margin: 0 auto; padding: 1.75rem 1.5rem 3rem; }
+
+.page { display: none; animation: fadeUp 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── Cards ──────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 1rem;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+.card-title svg { width: 15px; height: 15px; stroke: var(--amber); fill: none; }
+
+/* ── Metrics ────────────────────────────────────────── */
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; margin-bottom: 1.1rem; }
+.metric {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
+  position: relative;
+  overflow: hidden;
+}
+.metric::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), transparent 70%);
+  opacity: 0.5;
+}
+.metric-label { font-size: 10.5px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.09em; font-weight: 600; }
+.metric-value { font-family: var(--font-mono); font-size: 21px; font-weight: 600; color: var(--text); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Buttons ────────────────────────────────────────── */
+button, .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+button:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+button:active { transform: scale(0.97); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+button svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+.btn-primary {
+  background: var(--amber);
+  color: #1A1402;
+  border-color: var(--amber);
+  font-weight: 600;
+}
+.btn-primary:hover { background: #FFC83D; border-color: #FFC83D; }
+.btn-danger { color: var(--coral); border-color: rgba(244, 105, 76, 0.3); background: transparent; }
+.btn-danger:hover { background: var(--coral-dim); border-color: var(--coral); }
+
+/* ── Inputs ─────────────────────────────────────────── */
+input[type="text"], input[type="number"], select, textarea {
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input[type="number"] { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+input:focus, select:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-dim); }
+select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2392A0C0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; }
+
+/* ── Badges ─────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.badge-green { background: var(--teal-dim); color: var(--teal); }
+.badge-red { background: var(--coral-dim); color: var(--coral); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+.badge-purple { background: var(--purple-dim); color: var(--purple); }
+
+.score-high { color: var(--teal); }
+.score-mid { color: var(--amber); }
+.score-low { color: var(--coral); }
+
+/* ── Controls ───────────────────────────────────────── */
+.ctrl-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 13px; }
+.ctrl-row:last-child { margin-bottom: 0; }
+.ctrl-row label { font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; min-width: 150px; font-weight: 500; }
+.ctrl-row .val-display { font-family: var(--font-mono); font-size: 13px; font-weight: 600; min-width: 44px; color: var(--amber); font-variant-numeric: tabular-nums; }
+
+.signal-toggle { display: flex; gap: 7px; flex-wrap: wrap; }
+.sig-btn {
+  font-size: 12px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.sig-btn.on { background: var(--amber-dim); border-color: rgba(240, 180, 41, 0.45); color: var(--amber); font-weight: 600; }
+
+/* ── Scanner coin cards ─────────────────────────────── */
+.coin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.05rem 1.25rem;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.coin-card:hover { border-color: rgba(240, 180, 41, 0.35); }
+.coin-card-header { display: flex; align-items: center; gap: 13px; cursor: pointer; }
+.coin-avatar {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+.coin-info { flex: 1; min-width: 0; }
+.coin-name-text { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+.coin-meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.coin-meta .price { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* score ring — signature element */
+.score-ring { position: relative; width: 58px; height: 58px; flex-shrink: 0; }
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring .ring-bg { fill: none; stroke: var(--bg-hover); stroke-width: 5; }
+.score-ring .ring-val { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.score-ring .ring-num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 16px; font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.score-ring .ring-cap { font-size: 7.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+.signal-mini-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 13px; }
+.signal-mini {
+  background: var(--bg-elev);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 6px 8px;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.signal-mini:hover { border-color: var(--border-strong); }
+.signal-mini-icon { color: var(--text-muted); margin-bottom: 3px; display: flex; justify-content: center; }
+.signal-mini-icon svg { width: 13px; height: 13px; }
+.signal-mini-label { font-size: 9.5px; color: var(--text-muted); line-height: 1.2; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+.signal-mini-val { font-family: var(--font-mono); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.coin-detail { display: none; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+.coin-detail.open { display: block; animation: fadeUp 0.25s ease; }
+.signal-detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.signal-detail-row:last-of-type { border-bottom: none; }
+.signal-detail-label { color: var(--text-secondary); display: flex; align-items: center; gap: 7px; font-weight: 500; }
+.signal-detail-label svg { width: 13px; height: 13px; stroke: var(--text-muted); }
+.signal-bar-wrap { display: flex; align-items: center; gap: 9px; }
+.signal-bar { width: 90px; height: 5px; border-radius: 3px; background: var(--bg-hover); overflow: hidden; }
+.signal-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.signal-val { font-family: var(--font-mono); font-weight: 700; min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+.detail-actions { display: flex; gap: 8px; margin-top: 13px; flex-wrap: wrap; }
+
+/* ── Portfolio ──────────────────────────────────────── */
+.portfolio-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.portfolio-row:last-child { border-bottom: none; }
+.alloc-bar-wrap { flex: 1; }
+.alloc-bar { height: 6px; border-radius: 4px; background: var(--bg-hover); overflow: hidden; }
+.alloc-fill { height: 100%; border-radius: 4px; transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.position-size { text-align: right; min-width: 68px; }
+.position-size > div:first-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ── Alerts ─────────────────────────────────────────── */
+.alert-row { display: flex; align-items: flex-start; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.alert-row:last-child { border-bottom: none; }
+.alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; box-shadow: 0 0 8px currentColor; }
+.alert-content { flex: 1; min-width: 0; }
+.alert-title { font-weight: 500; }
+.alert-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; font-family: var(--font-mono); }
+
+/* ── Backtest ───────────────────────────────────────── */
+.bt-chart-wrap { position: relative; width: 100%; }
+.chart-legend { display: flex; gap: 18px; margin-bottom: 10px; font-size: 11.5px; color: var(--text-secondary); flex-wrap: wrap; }
+.chart-legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-line { width: 18px; height: 2.5px; border-radius: 2px; }
+
+.trade-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.trade-table th {
+  text-align: left; padding: 8px 7px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-weight: 600; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border-strong);
+}
+.trade-table td { padding: 8px 7px; border-bottom: 1px solid var(--border); }
+.trade-table tr:last-child td { border-bottom: none; }
+.trade-table tr:hover td { background: var(--bg-elev); }
+.pnl-pos { color: var(--teal); font-weight: 600; }
+.pnl-neg { color: var(--coral); font-weight: 600; }
+
+/* ── Compare ────────────────────────────────────────── */
+.compare-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.compare-row:last-child { border-bottom: none; }
+.compare-ticker { font-family: var(--font-mono); font-weight: 700; width: 44px; font-size: 13px; }
+.compare-bar-wrap { flex: 1; }
+.compare-bar { height: 7px; border-radius: 4px; background: var(--bg-hover); overflow: hidden; }
+.compare-fill { height: 100%; border-radius: 4px; transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.compare-stats { display: flex; gap: 14px; }
+.compare-stat { text-align: right; min-width: 54px; font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.compare-stat strong { display: block; font-family: var(--font-mono); font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; color: var(--text); }
+
+/* ── Status bar ─────────────────────────────────────── */
+.status-bar {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  padding: 11px 15px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 13px;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.status-bar.loading { color: var(--blue); border-color: rgba(91, 157, 255, 0.3); }
+.status-bar.error { color: var(--coral); background: var(--coral-dim); border-color: rgba(244, 105, 76, 0.3); }
+.status-bar.success { color: var(--teal); background: var(--teal-dim); border-color: rgba(45, 212, 167, 0.3); }
+
+/* ── Watchlist pills ────────────────────────────────── */
+.watchlist-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.watchlist-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 5px 9px 5px 13px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.watchlist-pill button {
+  padding: 0; border: none; background: transparent;
+  color: var(--text-muted); font-size: 13px; line-height: 1;
+  cursor: pointer; width: 17px; height: 17px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.watchlist-pill button:hover { background: var(--coral-dim); color: var(--coral); }
+
+/* ── Spinner / empty ────────────────────────────────── */
+.spinner {
+  width: 15px; height: 15px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 3.5rem 1rem; color: var(--text-secondary); }
+.empty-state svg { width: 38px; height: 38px; stroke: var(--text-muted); fill: none; margin-bottom: 14px; opacity: 0.7; }
+.empty-state p { font-size: 13.5px; margin-bottom: 12px; line-height: 1.7; }
+
+/* ── Toast ──────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 22px; right: 22px;
+  background: var(--bg-card);
+  border: 1px solid rgba(45, 212, 167, 0.4);
+  border-left: 3px solid var(--teal);
+  color: var(--text);
+  padding: 13px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 500;
+  max-width: 340px;
+  transform: translateY(90px); opacity: 0;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+#toast.visible { transform: translateY(0); opacity: 1; }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .main-content { padding: 1.1rem 0.9rem 2.5rem; }
+  header { padding: 0 1rem; }
+  .nav-tabs { padding: 0 0.4rem; }
+  .nav-tab { padding: 11px 11px; font-size: 12px; }
+  .nav-tab svg { width: 14px; height: 14px; }
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .compare-stats { gap: 7px; }
+  .compare-stat { min-width: 44px; }
+  .ctrl-row label { min-width: 118px; }
+  .score-ring { width: 52px; height: 52px; }
+  .logo-sub { display: none; }
+}
+
+  </style>
 </head>
 <body>
+
 
 <div class="app-shell">
 
@@ -399,12 +884,1251 @@
   #multi-status { display: flex !important; }
 </style>
 
-<script src="js/api.js"></script>
-<script src="js/signals.js"></script>
-<script src="js/backtest.js"></script>
-<script src="js/portfolio.js"></script>
-<script src="js/alerts.js"></script>
-<script src="js/app.js"></script>
+
+<!-- Alert toast -->
+<div id="toast" role="alert" aria-live="polite"></div>
+
+<style>
+  #multi-status { display: flex !important; }
+</style>
+
+<script>
+// ── API ──
+const API = (() => {
+  const BASE = 'https://api.coingecko.com/api/v3';
+  const cache = new Map();
+  const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+  async function get(path, params = {}) {
+    const url = new URL(BASE + path);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    const key = url.toString();
+    const cached = cache.get(key);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`CoinGecko ${r.status}: ${r.statusText}`);
+    const data = await r.json();
+    cache.set(key, { data, ts: Date.now() });
+    return data;
+  }
+
+  async function getCoinDetail(id) {
+    return get(`/coins/${id}`, {
+      localization: false, tickers: false,
+      market_data: true, community_data: true, developer_data: true, sparkline: false
+    });
+  }
+
+  async function getMarketChart(id, days) {
+    return get(`/coins/${id}/market_chart`, { vs_currency: 'eur', days, interval: 'daily' });
+  }
+
+  async function getOHLC(id, days) {
+    return get(`/coins/${id}/ohlc`, { vs_currency: 'eur', days });
+  }
+
+  async function getGlobal() {
+    const d = await get('/global');
+    return d.data;
+  }
+
+  async function getMarketsPage(ids) {
+    return get('/coins/markets', {
+      vs_currency: 'eur', ids: ids.join(','),
+      order: 'market_cap_desc', sparkline: false,
+      price_change_percentage: '24h,7d'
+    });
+  }
+
+  function clearCache() { cache.clear(); }
+
+  return { getCoinDetail, getMarketChart, getOHLC, getGlobal, getMarketsPage, clearCache };
+})();
+
+
+// ── SIGNALS ──
+const Signals = (() => {
+
+  // --- helpers ---
+  function ma(arr, period) {
+    return arr.map((_, i) => {
+      if (i < period - 1) return null;
+      return arr.slice(i - period + 1, i + 1).reduce((s, v) => s + v, 0) / period;
+    });
+  }
+
+  function clamp(v, min = 0, max = 100) { return Math.max(min, Math.min(max, v)); }
+
+  // --- signal 1: developer activity (on-chain fundamentals proxy) ---
+  function devActivity(coinData) {
+    const dev = coinData.developer_data || {};
+    let score = 0;
+    const commits = dev.commit_count_4_weeks || 0;
+    const stars = dev.stars || 0;
+    const issues = dev.closed_issues || 0;
+    const forks = dev.forks || 0;
+    const subscribers = dev.subscribers || 0;
+    score += clamp(commits * 2.5, 0, 35);
+    score += clamp(stars / 1500, 0, 20);
+    score += clamp(issues / 12, 0, 20);
+    score += clamp(forks / 800, 0, 15);
+    score += clamp(subscribers / 400, 0, 10);
+    const reasons = [];
+    if (commits > 10) reasons.push(`${commits} commit/4w`);
+    if (stars > 1000) reasons.push(`${stars.toLocaleString()} stars`);
+    if (issues > 5) reasons.push(`${issues} issue chiuse`);
+    return { score: clamp(Math.round(score)), reasons };
+  }
+
+  // --- signal 2: whale accumulation (volume + price behavior) ---
+  function whaleFlow(coinData) {
+    const md = coinData.market_data || {};
+    const vol = md.total_volume?.eur || md.total_volume?.usd || 0;
+    const mcap = md.market_cap?.eur || md.market_cap?.usd || 1;
+    const p24h = md.price_change_percentage_24h || 0;
+    const p7d = md.price_change_percentage_7d || 0;
+    const volRatio = vol / mcap;
+    let score = 40;
+    score += clamp(volRatio * 800, 0, 30);
+    if (p24h > 3 && volRatio > 0.04) score += 20;
+    else if (p24h > 1) score += 10;
+    else if (p24h < -5) score -= 15;
+    if (p7d > 10) score += 15;
+    else if (p7d > 5) score += 8;
+    else if (p7d < -10) score -= 10;
+    const reasons = [];
+    if (volRatio > 0.08) reasons.push(`Volume/MCap: ${(volRatio * 100).toFixed(1)}%`);
+    if (p24h > 2) reasons.push(`+${p24h.toFixed(1)}% 24h`);
+    if (p7d > 5) reasons.push(`+${p7d.toFixed(1)}% 7d`);
+    return { score: clamp(Math.round(score)), reasons };
+  }
+
+  // --- signal 3: token economics (supply/inflation/FDV) ---
+  function tokenomics(coinData) {
+    const md = coinData.market_data || {};
+    const circ = md.circulating_supply || 0;
+    const total = md.total_supply || circ;
+    const maxS = md.max_supply;
+    const mcap = md.market_cap?.eur || md.market_cap?.usd || 1;
+    const fdv = md.fully_diluted_valuation?.eur || md.fully_diluted_valuation?.usd || 0;
+    let score = 30;
+    const supplyRatio = total > 0 ? circ / total : 0.5;
+    score += Math.round(supplyRatio * 30);
+    if (maxS && maxS > 0) score += 15;
+    const fdvRatio = fdv > 0 ? fdv / mcap : 1;
+    if (fdvRatio < 1.5) score += 25;
+    else if (fdvRatio < 3) score += 15;
+    else if (fdvRatio < 6) score += 8;
+    const reasons = [];
+    if (supplyRatio > 0.85) reasons.push(`${(supplyRatio * 100).toFixed(0)}% supply circolante`);
+    if (maxS) reasons.push('Supply massima definita');
+    if (fdvRatio < 2) reasons.push(`FDV/MCap: ${fdvRatio.toFixed(1)}x`);
+    return { score: clamp(Math.round(score)), reasons };
+  }
+
+  // --- signal 4: catalyst (momentum vs ATH, sentiment, rank) ---
+  function catalyst(coinData) {
+    const md = coinData.market_data || {};
+    const athDiff = md.ath_change_percentage?.eur || md.ath_change_percentage?.usd || -50;
+    const rank = coinData.market_cap_rank || 999;
+    const sentiment = coinData.sentiment_votes_up_percentage || 50;
+    let score = 20;
+    if (athDiff > -15) score += 30;
+    else if (athDiff > -35) score += 20;
+    else if (athDiff > -60) score += 10;
+    if (rank <= 10) score += 25;
+    else if (rank <= 30) score += 18;
+    else if (rank <= 100) score += 10;
+    score += Math.round((sentiment / 100) * 25);
+    const reasons = [];
+    if (athDiff > -20) reasons.push(`${athDiff.toFixed(0)}% da ATH`);
+    if (rank <= 20) reasons.push(`Rank #${rank}`);
+    if (sentiment > 65) reasons.push(`Sentiment ${sentiment.toFixed(0)}%`);
+    return { score: clamp(Math.round(score)), reasons };
+  }
+
+  // --- signal 5: sector rotation (BTC dominance + relative strength) ---
+  function sectorRotation(coinData, globalData) {
+    const md = coinData.market_data || {};
+    const id = coinData.id;
+    const btcDom = globalData?.market_cap_percentage?.btc || 50;
+    const p7dVsBtc = md.price_change_percentage_7d_in_currency?.btc || 0;
+    const p30d = md.price_change_percentage_30d || 0;
+    const LAYER1 = ['ethereum', 'solana', 'avalanche-2', 'polkadot', 'cardano', 'near', 'cosmos'];
+    const DEFI = ['uniswap', 'aave', 'maker', 'compound-governance-token', 'curve-dao-token'];
+    const isBTC = id === 'bitcoin';
+    const isL1 = LAYER1.includes(id);
+    const isDeFi = DEFI.includes(id);
+    let score = 45;
+    if (isBTC) { score = btcDom > 52 ? 75 : btcDom > 45 ? 60 : 50; }
+    else if (isL1) { score = btcDom < 48 ? 72 : btcDom > 55 ? 45 : 60; }
+    else if (isDeFi) { score = btcDom < 43 ? 80 : btcDom < 50 ? 65 : 40; }
+    else { score = 50; }
+    score += clamp(p7dVsBtc * 1.5, -20, 20);
+    if (p30d > 15) score += 10;
+    else if (p30d < -15) score -= 10;
+    const reasons = [];
+    reasons.push(`BTC dom: ${btcDom.toFixed(1)}%`);
+    if (Math.abs(p7dVsBtc) > 3) reasons.push(`vs BTC 7d: ${p7dVsBtc > 0 ? '+' : ''}${p7dVsBtc.toFixed(1)}%`);
+    return { score: clamp(Math.round(score)), reasons };
+  }
+
+  // --- composite ---
+  function computeAll(coinData, globalData, weights = { dev: 20, whale: 20, tokenomics: 20, catalyst: 20, rotation: 20 }) {
+    const dev = devActivity(coinData);
+    const whale = whaleFlow(coinData);
+    const tok = tokenomics(coinData);
+    const cat = catalyst(coinData);
+    const rot = sectorRotation(coinData, globalData);
+    const tw = weights.dev + weights.whale + weights.tokenomics + weights.catalyst + weights.rotation;
+    const composite = Math.round(
+      (dev.score * weights.dev + whale.score * weights.whale +
+       tok.score * weights.tokenomics + cat.score * weights.catalyst +
+       rot.score * weights.rotation) / tw
+    );
+    return { dev, whale, tokenomics: tok, catalyst: cat, rotation: rot, composite };
+  }
+
+  // --- backtesting signal (price-series based) ---
+  function scoreFromPrices(prices, volumes, idx, activeSet) {
+    if (idx < 20) return 50;
+    let total = 0, count = 0;
+    const p = prices;
+    const i = idx;
+
+    if (activeSet.has('momentum')) {
+      const r5 = (p[i] - p[i - 5]) / p[i - 5];
+      const r10 = (p[i] - p[i - 10]) / p[i - 10];
+      let s = 50;
+      if (r5 > 0.06) s += 28; else if (r5 > 0.02) s += 14; else if (r5 < -0.06) s -= 22;
+      if (r10 > 0.12) s += 14; else if (r10 < -0.12) s -= 14;
+      total += clamp(s); count++;
+    }
+
+    if (activeSet.has('volume') && volumes?.[i]) {
+      const window = volumes.slice(Math.max(0, i - 14), i);
+      const avgVol = window.length ? window.reduce((a, b) => a + b, 0) / window.length : 1;
+      const vr = avgVol > 0 ? volumes[i] / avgVol : 1;
+      const up = p[i] >= p[i - 1];
+      let s = 50;
+      if (vr > 2.2 && up) s = 88; else if (vr > 1.5 && up) s = 72;
+      else if (vr > 2 && !up) s = 28; else if (vr < 0.6) s = 42;
+      total += s; count++;
+    }
+
+    if (activeSet.has('trend')) {
+      const slice = p.slice(0, i + 1);
+      const m10 = ma(slice, 10); const m20 = ma(slice, 20);
+      const c10 = m10[m10.length - 1]; const c20 = m20[m20.length - 1];
+      const pr10 = m10[m10.length - 2]; const pr20 = m20[m20.length - 2];
+      let s = 50;
+      if (c10 && c20 && pr10 && pr20) {
+        if (c10 > c20 && pr10 <= pr20) s = 92;
+        else if (c10 > c20) s = 65;
+        else if (c10 < c20 && pr10 >= pr20) s = 12;
+        else s = 35;
+      }
+      total += s; count++;
+    }
+
+    if (activeSet.has('reversal')) {
+      const window = p.slice(Math.max(0, i - 20), i + 1);
+      const avg = window.reduce((a, b) => a + b, 0) / window.length;
+      const dev2 = (p[i] / avg) - 1;
+      let s = 50;
+      if (dev2 < -0.12) s = 82; else if (dev2 < -0.05) s = 66;
+      else if (dev2 > 0.18) s = 28; else if (dev2 > 0.08) s = 40;
+      total += s; count++;
+    }
+
+    if (activeSet.has('volatility')) {
+      const window = p.slice(Math.max(0, i - 14), i + 1);
+      const rets = window.slice(1).map((v, j) => Math.abs((v - window[j]) / window[j]));
+      const avgV = rets.reduce((a, b) => a + b, 0) / (rets.length || 1);
+      const recentV = rets.slice(-3).reduce((a, b) => a + b, 0) / 3;
+      let s = 50;
+      if (recentV < avgV * 0.45) s = 78; else if (recentV < avgV * 0.7) s = 63;
+      else if (recentV > avgV * 2.2) s = 28;
+      total += s; count++;
+    }
+
+    return count > 0 ? Math.round(total / count) : 50;
+  }
+
+  return { computeAll, scoreFromPrices, ma };
+})();
+
+
+// ── BACKTEST ──
+const Backtest = (() => {
+
+  function run(prices, volumes, labels, opts, activeSet) {
+    const { entryThresh, stopPct, tpPct, capitalInit, posSizePct } = opts;
+    const stopMult = 1 - stopPct / 100;
+    const tpMult = 1 + tpPct / 100;
+    const posSize = posSizePct / 100;
+
+    let cash = capitalInit;
+    const equity = [capitalInit];
+    const bh = [capitalInit];
+    const scores = [];
+    const trades = [];
+
+    let inTrade = false;
+    let entryPrice = 0, entryIdx = 0, entryScore = 0;
+
+    for (let i = 0; i < prices.length; i++) {
+      const score = Signals.scoreFromPrices(prices, volumes, i, activeSet);
+      scores.push(score);
+      bh.push(capitalInit * (prices[i] / prices[0]));
+
+      if (!inTrade && score >= entryThresh && i < prices.length - 1) {
+        inTrade = true;
+        entryPrice = prices[i + 1];
+        entryIdx = i + 1;
+        entryScore = score;
+      } else if (inTrade) {
+        const pnlPct = (prices[i] - entryPrice) / entryPrice;
+        let reason = null;
+        if (prices[i] <= entryPrice * stopMult) reason = 'stop loss';
+        else if (prices[i] >= entryPrice * tpMult) reason = 'take profit';
+        else if (score < 35) reason = 'segnale uscita';
+        else if (i === prices.length - 1) reason = 'fine periodo';
+        if (reason) {
+          const pnlEur = cash * posSize * pnlPct;
+          cash += pnlEur;
+          inTrade = false;
+          trades.push({
+            entryIdx, exitIdx: i,
+            entryDate: labels[entryIdx] || '', exitDate: labels[i] || '',
+            entryPrice, exitPrice: prices[i],
+            pnlPct: pnlPct * 100,
+            pnlEur,
+            reason,
+            score: entryScore
+          });
+        }
+      }
+      equity.push(cash);
+    }
+
+    return { equity, bh, scores, trades };
+  }
+
+  function stats(equity, trades, bh) {
+    const init = equity[0];
+    const final = equity[equity.length - 1];
+    const totalReturn = (final - init) / init * 100;
+    const bhReturn = (bh[bh.length - 1] - bh[0]) / bh[0] * 100;
+
+    let maxDD = 0, peak = init;
+    for (const c of equity) {
+      if (c > peak) peak = c;
+      const dd = (peak - c) / peak * 100;
+      if (dd > maxDD) maxDD = dd;
+    }
+
+    const wins = trades.filter(t => t.pnlPct > 0);
+    const losses = trades.filter(t => t.pnlPct <= 0);
+    const winRate = trades.length ? wins.length / trades.length * 100 : 0;
+    const avgWin = wins.length ? wins.reduce((s, t) => s + t.pnlPct, 0) / wins.length : 0;
+    const avgLoss = losses.length ? losses.reduce((s, t) => s + t.pnlPct, 0) / losses.length : 0;
+    const profitFactor = losses.length && avgLoss !== 0
+      ? Math.abs((avgWin * wins.length) / (avgLoss * losses.length))
+      : wins.length > 0 ? 999 : 0;
+
+    const dailyRets = equity.slice(1).map((c, i) => (c - equity[i]) / equity[i]);
+    const mu = dailyRets.reduce((a, b) => a + b, 0) / dailyRets.length;
+    const sigma = Math.sqrt(dailyRets.reduce((s, r) => s + Math.pow(r - mu, 2), 0) / dailyRets.length);
+    const sharpe = sigma > 0 ? (mu / sigma) * Math.sqrt(365) : 0;
+
+    return {
+      totalReturn, bhReturn, maxDD, winRate, avgWin, avgLoss,
+      profitFactor, sharpe, nTrades: trades.length,
+      nWins: wins.length, nLosses: losses.length,
+      finalCapital: final, initCapital: init
+    };
+  }
+
+  return { run, stats };
+})();
+
+
+// ── PORTFOLIO ──
+const Portfolio = (() => {
+
+  function build(scannerData, opts) {
+    const { budget, riskPct, maxPositions } = opts;
+    const eligible = scannerData
+      .filter(d => d.signals)
+      .sort((a, b) => b.signals.composite - a.signals.composite)
+      .slice(0, maxPositions);
+
+    if (!eligible.length) return [];
+
+    const totalScore = eligible.reduce((s, d) => s + d.signals.composite, 0);
+    const PALETTE = ['#7F77DD', '#1D9E75', '#D85A30', '#378ADD', '#BA7517', '#D4537E', '#639922'];
+
+    return eligible.map((d, i) => {
+      const weight = d.signals.composite / totalScore;
+      const allocation = budget * weight;
+      const riskAmount = budget * riskPct / 100;
+      const stopDistance = 0.10;
+      const impliedStopPrice = (d.price || 0) * (1 - stopDistance);
+      return {
+        id: d.id,
+        name: d.name,
+        symbol: d.symbol,
+        price: d.price || 0,
+        score: d.signals.composite,
+        weight,
+        allocation,
+        riskAmount,
+        stopPrice: impliedStopPrice,
+        stopPct: stopDistance * 100,
+        color: PALETTE[i % PALETTE.length],
+        units: d.price ? allocation / d.price : 0
+      };
+    });
+  }
+
+  function riskFromStop(capitalTotal, riskPctPerTrade, entryPrice, stopPrice) {
+    const riskAmount = capitalTotal * riskPctPerTrade / 100;
+    const riskPerUnit = entryPrice - stopPrice;
+    if (riskPerUnit <= 0) return { units: 0, allocation: 0, riskAmount };
+    const units = riskAmount / riskPerUnit;
+    return { units, allocation: units * entryPrice, riskAmount };
+  }
+
+  return { build, riskFromStop };
+})();
+
+
+// ── ALERTS ──
+const Alerts = (() => {
+  const KEY = 'csa_alerts';
+  const LOG_KEY = 'csa_alert_log';
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; }
+  }
+
+  function save(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {}
+  }
+
+  function loadLog() {
+    try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveLog(log) {
+    try { localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(-100))); } catch {}
+  }
+
+  function add(alert) {
+    const list = load();
+    list.push({ ...alert, id: Date.now(), active: true, createdAt: new Date().toISOString() });
+    save(list);
+    return list;
+  }
+
+  function remove(id) {
+    const list = load().filter(a => a.id !== id);
+    save(list);
+    return list;
+  }
+
+  function toggle(id) {
+    const list = load().map(a => a.id === id ? { ...a, active: !a.active } : a);
+    save(list);
+    return list;
+  }
+
+  function check(scannerData) {
+    const alerts = load().filter(a => a.active);
+    const log = loadLog();
+    const triggered = [];
+
+    for (const alert of alerts) {
+      const coin = scannerData.find(d => d.id === alert.coinId);
+      if (!coin?.signals) continue;
+      const sig = coin.signals;
+      let fire = false;
+      let message = '';
+
+      switch (alert.type) {
+        case 'score_above':
+          if (sig.composite >= alert.threshold) {
+            fire = true;
+            message = `${coin.name}: score ${sig.composite} ≥ soglia ${alert.threshold}`;
+          }
+          break;
+        case 'score_below':
+          if (sig.composite < alert.threshold) {
+            fire = true;
+            message = `${coin.name}: score ${sig.composite} < soglia ${alert.threshold}`;
+          }
+          break;
+        case 'whale_buy':
+          if (sig.whale.score >= 70) {
+            fire = true;
+            message = `${coin.name}: whale flow forte (${sig.whale.score}/100)`;
+          }
+          break;
+        case 'dev_spike':
+          if (sig.dev.score >= 75) {
+            fire = true;
+            message = `${coin.name}: dev activity spike (${sig.dev.score}/100)`;
+          }
+          break;
+        case 'catalyst':
+          if (sig.catalyst.score >= 75) {
+            fire = true;
+            message = `${coin.name}: catalyst segnale forte (${sig.catalyst.score}/100)`;
+          }
+          break;
+      }
+
+      if (fire) {
+        const entry = {
+          alertId: alert.id,
+          coinId: coin.id,
+          coinName: coin.name,
+          message,
+          type: alert.type,
+          score: sig.composite,
+          ts: new Date().toISOString()
+        };
+        log.unshift(entry);
+        triggered.push(entry);
+      }
+    }
+
+    saveLog(log);
+    return { triggered, log: loadLog() };
+  }
+
+  const TYPE_LABELS = {
+    score_above: 'Score ↑ sopra soglia',
+    score_below: 'Score ↓ sotto soglia',
+    whale_buy: 'Whale flow forte',
+    dev_spike: 'Dev activity spike',
+    catalyst: 'Catalyst segnale forte'
+  };
+
+  return { load, add, remove, toggle, check, loadLog, TYPE_LABELS };
+})();
+
+
+// ── APP ──
+const App = (() => {
+  // ── state ──────────────────────────────────────────────────────────────
+  const DEFAULT_WATCHLIST = ['bitcoin', 'ethereum', 'solana', 'chainlink', 'avalanche-2', 'polkadot'];
+  const STORAGE_KEY = 'csa_state';
+  const PALETTE = ['#F0B429', '#2DD4A7', '#9D8DF1', '#5B9DFF', '#F4694C', '#ED93B1', '#97C459'];
+
+  // signature element: composite score as SVG ring gauge
+  function scoreRing(score, size = 58) {
+    const r = (size / 2) - 5;
+    const circ = 2 * Math.PI * r;
+    const offset = circ * (1 - score / 100);
+    const color = score >= 72 ? 'var(--teal)' : score >= 50 ? 'var(--amber)' : 'var(--coral)';
+    return `
+    <div class="score-ring" style="width:${size}px;height:${size}px" role="img" aria-label="Composite score ${score} su 100">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle class="ring-bg" cx="${size/2}" cy="${size/2}" r="${r}"></circle>
+        <circle class="ring-val" cx="${size/2}" cy="${size/2}" r="${r}"
+          stroke="${color}" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"></circle>
+      </svg>
+      <div class="ring-num" style="color:${color}">${score}<span class="ring-cap">score</span></div>
+    </div>`;
+  }
+
+  let state = {
+    watchlist: [...DEFAULT_WATCHLIST],
+    scannerData: [],
+    globalData: null,
+    weights: { dev: 20, whale: 20, tokenomics: 20, catalyst: 20, rotation: 20 },
+    autoRefreshInterval: 0,
+    autoRefreshTimer: null,
+    charts: {},
+    btActiveSigs: new Set(['momentum', 'volume', 'trend', 'reversal', 'volatility']),
+    btResult: null,
+    currentPage: 'scanner'
+  };
+
+  function loadPersistedState() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      if (s.watchlist?.length) state.watchlist = s.watchlist;
+      if (s.weights) state.weights = { ...state.weights, ...s.weights };
+    } catch {}
+  }
+
+  function persistState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ watchlist: state.watchlist, weights: state.weights }));
+    } catch {}
+  }
+
+  // ── utils ──────────────────────────────────────────────────────────────
+  function scoreColor(s) {
+    if (s >= 72) return 'var(--teal)';
+    if (s >= 50) return 'var(--amber)';
+    return 'var(--coral)';
+  }
+
+  function scoreClass(s) {
+    if (s >= 72) return 'score-high';
+    if (s >= 50) return 'score-mid';
+    return 'score-low';
+  }
+
+  function fmt(n, decimals = 1) { return Number(n.toFixed(decimals)).toLocaleString('it-IT'); }
+  function fmtEur(n) { return '€' + Math.round(n).toLocaleString('it-IT'); }
+  function fmtPct(n, sign = true) { return (sign && n > 0 ? '+' : '') + n.toFixed(1) + '%'; }
+
+  function setStatus(id, msg, type = '') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'status-bar' + (type ? ' ' + type : '');
+    el.innerHTML = type === 'loading'
+      ? `<div class="spinner"></div> ${msg}`
+      : msg;
+  }
+
+  function destroyChart(key) {
+    if (state.charts[key]) { state.charts[key].destroy(); delete state.charts[key]; }
+  }
+
+  // ── navigation ─────────────────────────────────────────────────────────
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    const page = document.getElementById('page-' + name);
+    if (page) page.classList.add('active');
+    const tab = document.querySelector(`.nav-tab[data-page="${name}"]`);
+    if (tab) tab.classList.add('active');
+    state.currentPage = name;
+    if (name === 'portfolio') renderPortfolio();
+    if (name === 'alerts') renderAlertLog();
+    if (name === 'settings') renderSettings();
+  }
+
+  // ── data loading ───────────────────────────────────────────────────────
+  async function refresh() {
+    const btn = document.getElementById('btn-refresh');
+    if (btn) { btn.disabled = true; btn.innerHTML = svg('refresh') + ' Aggiornamento...'; }
+    setStatus('scanner-status', 'Connessione a CoinGecko...', 'loading');
+
+    try {
+      state.globalData = await API.getGlobal();
+      const results = [];
+      for (let i = 0; i < state.watchlist.length; i++) {
+        const id = state.watchlist[i];
+        setStatus('scanner-status', `Caricamento ${id} (${i + 1}/${state.watchlist.length})...`, 'loading');
+        try {
+          if (i > 0) await sleep(800);
+          const data = await API.getCoinDetail(id);
+          const md = data.market_data || {};
+          results.push({
+            id,
+            name: data.name,
+            symbol: (data.symbol || '').toUpperCase(),
+            price: md.current_price?.eur || md.current_price?.usd || 0,
+            change24h: md.price_change_percentage_24h || 0,
+            change7d: md.price_change_percentage_7d || 0,
+            mcap: md.market_cap?.eur || 0,
+            rank: data.market_cap_rank || 999,
+            signals: Signals.computeAll(data, state.globalData, state.weights)
+          });
+        } catch (e) {
+          console.warn('Skip', id, e.message);
+        }
+      }
+      state.scannerData = results;
+
+      // check alerts
+      const { triggered } = Alerts.check(state.scannerData);
+      if (triggered.length) showAlertToast(triggered);
+
+      setStatus('scanner-status',
+        `Aggiornato: ${new Date().toLocaleTimeString('it-IT')} · ${results.length} asset · ${triggered.length} alert attivati`,
+        'success');
+      document.getElementById('last-update-label').textContent =
+        'Aggiornato: ' + new Date().toLocaleTimeString('it-IT');
+
+      renderScanner();
+      if (state.currentPage === 'portfolio') renderPortfolio();
+
+    } catch (e) {
+      setStatus('scanner-status', 'Errore: ' + e.message + ' · Riprova tra qualche secondo.', 'error');
+    }
+
+    if (btn) { btn.disabled = false; btn.innerHTML = svg('refresh') + ' Aggiorna'; }
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ── scanner rendering ──────────────────────────────────────────────────
+  function renderScanner() {
+    const filterScore = parseInt(document.getElementById('filter-score')?.value || '0');
+    const filterSig = document.getElementById('filter-signal')?.value || 'all';
+    const sortBy = document.getElementById('sort-by')?.value || 'composite';
+
+    let coins = state.scannerData.filter(d => {
+      if (!d.signals) return false;
+      if (d.signals.composite < filterScore) return false;
+      if (filterSig !== 'all') {
+        const top = Object.entries({
+          dev: d.signals.dev.score, whale: d.signals.whale.score,
+          tokenomics: d.signals.tokenomics.score, catalyst: d.signals.catalyst.score,
+          rotation: d.signals.rotation.score
+        }).sort((a, b) => b[1] - a[1])[0][0];
+        if (top !== filterSig) return false;
+      }
+      return true;
+    });
+
+    coins.sort((a, b) => {
+      if (sortBy === 'composite') return b.signals.composite - a.signals.composite;
+      if (sortBy === 'change24h') return b.change24h - a.change24h;
+      if (sortBy === 'rank') return (a.rank || 999) - (b.rank || 999);
+      return b.signals.composite - a.signals.composite;
+    });
+
+    const strong = coins.filter(c => c.signals.composite >= 72).length;
+    const avg = coins.length ? Math.round(coins.reduce((s, c) => s + c.signals.composite, 0) / coins.length) : 0;
+
+    document.getElementById('scanner-metrics').innerHTML = `
+      <div class="metric"><div class="metric-label">Asset monitorati</div><div class="metric-value">${state.watchlist.length}</div><div class="metric-sub">nella watchlist</div></div>
+      <div class="metric"><div class="metric-label">Segnali forti</div><div class="metric-value score-high">${strong}</div><div class="metric-sub">score ≥ 72</div></div>
+      <div class="metric"><div class="metric-label">Score medio</div><div class="metric-value">${avg || '—'}</div><div class="metric-sub">su 100</div></div>
+      <div class="metric"><div class="metric-label">BTC dominance</div><div class="metric-value">${state.globalData ? state.globalData.market_cap_percentage?.btc?.toFixed(1) + '%' : '—'}</div><div class="metric-sub">rotazione ref.</div></div>
+    `;
+
+    const list = document.getElementById('scanner-list');
+    if (!coins.length) {
+      list.innerHTML = `<div class="empty-state">${svgBig('radar')}<p>Nessun asset caricato.<br>Premi <strong>Aggiorna</strong> per caricare i dati.</p></div>`;
+      return;
+    }
+
+    list.innerHTML = coins.map((d, i) => {
+      const sig = d.signals;
+      const changeBadge = d.change24h >= 0 ? 'badge-green' : 'badge-red';
+      const color = PALETTE[i % PALETTE.length];
+      const sigKeys = ['dev', 'whale', 'tokenomics', 'catalyst', 'rotation'];
+      const sigLabels = { dev: 'Dev', whale: 'Whale', tokenomics: 'Supply', catalyst: 'Catalyst', rotation: 'Rotaz.' };
+      const sigIcons = { dev: 'code', whale: 'fish', tokenomics: 'flame', catalyst: 'rocket', rotation: 'arrows-exchange' };
+
+      return `
+      <div class="coin-card" id="card-${d.id}">
+        <div class="coin-card-header" onclick="App.toggleDetail('${d.id}')">
+          <div class="coin-avatar" style="background:${color}1f;color:${color}">${d.symbol.slice(0,3)}</div>
+          <div class="coin-info">
+            <div class="coin-name-text">${d.name}</div>
+            <div class="coin-meta">
+              <span>${d.symbol}</span>
+              <span class="price">${d.price ? fmtEur(d.price) : '—'}</span>
+              <span class="badge ${changeBadge}">${fmtPct(d.change24h)}</span>
+              ${d.rank < 200 ? `<span class="badge badge-blue">#${d.rank}</span>` : ''}
+            </div>
+          </div>
+          ${scoreRing(sig.composite)}
+        </div>
+        <div class="signal-mini-grid">
+          ${sigKeys.map(k => `
+            <div class="signal-mini">
+              <div class="signal-mini-icon">${svg(sigIcons[k])}</div>
+              <div class="signal-mini-label">${sigLabels[k]}</div>
+              <div class="signal-mini-val ${scoreClass(sig[k].score)}">${sig[k].score}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="coin-detail" id="detail-${d.id}">
+          <div style="margin-bottom:8px;font-size:12px;color:var(--text-secondary);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Breakdown</div>
+          ${sigKeys.map(k => {
+            const s = sig[k];
+            return `
+            <div class="signal-detail-row">
+              <span class="signal-detail-label">${svg(sigIcons[k])} ${k === 'tokenomics' ? 'Tokenomics' : sigLabels[k]}</span>
+              <div class="signal-bar-wrap">
+                ${s.reasons?.length ? `<span style="font-size:11px;color:var(--text-muted);margin-right:6px;max-width:140px;text-align:right;line-height:1.3">${s.reasons.slice(0,2).join(' · ')}</span>` : ''}
+                <div class="signal-bar"><div class="signal-bar-fill" style="width:${s.score}%;background:${scoreColor(s.score)}"></div></div>
+                <span class="signal-val ${scoreClass(s.score)}">${s.score}</span>
+              </div>
+            </div>`;
+          }).join('')}
+          <div class="detail-actions">
+            <button onclick="App.addToWatchlist('${d.id}','portfolio')">${svg('plus')} Aggiungi al portfolio</button>
+            <button onclick="App.openBacktestFor('${d.id}')">${svg('chart-line')} Backtesta</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleDetail(id) {
+    const el = document.getElementById('detail-' + id);
+    if (el) el.classList.toggle('open');
+  }
+
+  // ── portfolio rendering ────────────────────────────────────────────────
+  function renderPortfolio() {
+    const budget = parseFloat(document.getElementById('budget')?.value || 10000);
+    const riskPct = parseFloat(document.getElementById('risk-pct')?.value || 2);
+    const maxPos = parseInt(document.getElementById('max-pos')?.value || 5);
+
+    const positions = Portfolio.build(state.scannerData, { budget, riskPct, maxPositions: maxPos });
+
+    if (!positions.length) {
+      document.getElementById('portfolio-output').innerHTML =
+        `<div class="empty-state">${svgBig('wallet')}<p>Carica i dati dallo scanner prima di costruire il portfolio.</p></div>`;
+      return;
+    }
+
+    const maxAlloc = Math.max(...positions.map(p => p.allocation));
+    const totalRisk = budget * riskPct / 100 * positions.length;
+
+    document.getElementById('portfolio-metrics').innerHTML = `
+      <div class="metric"><div class="metric-label">Budget totale</div><div class="metric-value">${fmtEur(budget)}</div></div>
+      <div class="metric"><div class="metric-label">Posizioni</div><div class="metric-value">${positions.length}</div></div>
+      <div class="metric"><div class="metric-label">Rischio per trade</div><div class="metric-value">${fmt(riskPct)}%</div></div>
+      <div class="metric"><div class="metric-label">Rischio max totale</div><div class="metric-value score-low">${fmtEur(totalRisk)}</div><div class="metric-sub">${fmt(riskPct * positions.length)}% del capital</div></div>
+    `;
+
+    document.getElementById('portfolio-output').innerHTML = positions.map(pos => `
+      <div class="portfolio-row">
+        <div class="coin-avatar" style="background:${pos.color}22;color:${pos.color};width:36px;height:36px;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">${pos.symbol.slice(0,3)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500">${pos.name}</div>
+          <div class="alloc-bar-wrap" style="margin-top:5px">
+            <div class="alloc-bar"><div class="alloc-fill" style="width:${(pos.allocation/maxAlloc*100).toFixed(0)}%;background:${pos.color}"></div></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Stop loss: ${fmtEur(pos.stopPrice)} (−${pos.stopPct}%)</div>
+        </div>
+        <div class="position-size">
+          <div style="font-size:14px;font-weight:500">${fmtEur(pos.allocation)}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">${(pos.weight*100).toFixed(1)}%</div>
+        </div>
+        <div style="text-align:center;min-width:36px">
+          <div class="${scoreClass(pos.score)}" style="font-size:14px;font-weight:600">${pos.score}</div>
+          <div style="font-size:10px;color:var(--text-muted)">score</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── alerts rendering ───────────────────────────────────────────────────
+  function renderAlerts() {
+    const list = Alerts.load();
+    const coinSel = document.getElementById('alert-coin');
+    if (coinSel) {
+      coinSel.innerHTML = state.scannerData.map(d => `<option value="${d.id}">${d.name}</option>`).join('') ||
+        state.watchlist.map(id => `<option value="${id}">${id}</option>`).join('');
+    }
+
+    const el = document.getElementById('alert-list');
+    if (!el) return;
+    if (!list.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);padding:8px 0">Nessun alert configurato.</div>';
+      return;
+    }
+    el.innerHTML = list.map(a => `
+      <div class="alert-row">
+        <div class="alert-dot" style="background:${a.active ? 'var(--teal)' : 'var(--text-muted)'}"></div>
+        <div class="alert-content">
+          <div class="alert-title">${state.scannerData.find(d=>d.id===a.coinId)?.name || a.coinId}</div>
+          <div class="alert-sub">${Alerts.TYPE_LABELS[a.type]} · soglia ${a.threshold || '—'}</div>
+        </div>
+        <button class="btn-danger" onclick="App.removeAlert(${a.id})" aria-label="Rimuovi alert">${svg('trash')}</button>
+      </div>
+    `).join('');
+  }
+
+  function renderAlertLog() {
+    renderAlerts();
+    const log = Alerts.loadLog();
+    const el = document.getElementById('alert-log');
+    if (!el) return;
+    if (!log.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);padding:8px 0">Nessun segnale registrato.</div>';
+      return;
+    }
+    el.innerHTML = log.slice(0, 20).map(l => {
+      const score = l.score || 0;
+      const badgeClass = score >= 72 ? 'badge-green' : score >= 50 ? 'badge-amber' : 'badge-red';
+      return `
+      <div class="alert-row">
+        <div class="alert-dot" style="background:${scoreColor(score)}"></div>
+        <div class="alert-content">
+          <div class="alert-title">${l.message}</div>
+          <div class="alert-sub">${new Date(l.ts).toLocaleString('it-IT')}</div>
+        </div>
+        <span class="badge ${badgeClass}">${score}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function addAlert() {
+    const coinId = document.getElementById('alert-coin')?.value;
+    const type = document.getElementById('alert-type')?.value;
+    const threshold = parseInt(document.getElementById('alert-threshold')?.value || 70);
+    if (!coinId) return;
+    Alerts.add({ coinId, type, threshold });
+    renderAlerts();
+  }
+
+  function removeAlert(id) {
+    Alerts.remove(id);
+    renderAlerts();
+  }
+
+  function showAlertToast(triggered) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = triggered[0].message + (triggered.length > 1 ? ` (+${triggered.length - 1} altri)` : '');
+    toast.classList.add('visible');
+    setTimeout(() => toast.classList.remove('visible'), 5000);
+  }
+
+  // ── backtest ───────────────────────────────────────────────────────────
+  async function runBacktest() {
+    const coinId = document.getElementById('bt-coin')?.value;
+    const days = parseInt(document.getElementById('bt-days')?.value || 180);
+    const entryThresh = parseInt(document.getElementById('entry-thresh')?.value || 60);
+    const stopPct = parseInt(document.getElementById('bt-stop')?.value || 8);
+    const tpPct = parseInt(document.getElementById('bt-tp')?.value || 20);
+    const capital = parseFloat(document.getElementById('bt-capital')?.value || 10000);
+    const posSizePct = parseInt(document.getElementById('bt-possize')?.value || 20);
+
+    const btn = document.getElementById('bt-run-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = svg('player-play') + ' Caricamento...'; }
+    setStatus('bt-status', 'Connessione a CoinGecko...', 'loading');
+
+    try {
+      const mc = await API.getMarketChart(coinId, days);
+      setStatus('bt-status', 'Simulazione in corso...', 'loading');
+
+      const prices = mc.prices.map(p => p[1]);
+      const volumes = mc.total_volumes.map(v => v[1]);
+      const labels = mc.prices.map(p => new Date(p[0]).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' }));
+
+      const result = Backtest.run(prices, volumes, labels,
+        { entryThresh, stopPct, tpPct, capitalInit: capital, posSizePct },
+        state.btActiveSigs);
+      const s = Backtest.stats(result.equity, result.trades, result.bh);
+      state.btResult = { result, s, labels };
+
+      renderBtResults(result, s, labels);
+      showPage('backtest');
+      document.querySelector('.nav-tab[data-page="backtest"]')?.classList.add('active');
+
+      setStatus('bt-status',
+        `Backtest completato: ${result.trades.length} trade su ${prices.length} giorni di dati reali.`, 'success');
+    } catch (e) {
+      setStatus('bt-status', 'Errore: ' + e.message, 'error');
+    }
+
+    if (btn) { btn.disabled = false; btn.innerHTML = svg('player-play') + ' Esegui backtest'; }
+  }
+
+  function renderBtResults(result, s, labels) {
+    const mc = v => v >= 0 ? 'var(--teal)' : 'var(--red)';
+
+    document.getElementById('bt-metrics').innerHTML = `
+      <div class="metric"><div class="metric-label">Rendimento strategia</div><div class="metric-value" style="color:${mc(s.totalReturn)}">${fmtPct(s.totalReturn)}</div><div class="metric-sub">B&H: ${fmtPct(s.bhReturn)}</div></div>
+      <div class="metric"><div class="metric-label">Sharpe ratio</div><div class="metric-value" style="color:${s.sharpe>=1?'var(--teal)':s.sharpe>=0?'var(--amber)':'var(--red)'}">${s.sharpe.toFixed(2)}</div><div class="metric-sub">>1 = buono</div></div>
+      <div class="metric"><div class="metric-label">Max drawdown</div><div class="metric-value" style="color:${s.maxDD>20?'var(--red)':'var(--text)'}">−${s.maxDD.toFixed(1)}%</div><div class="metric-sub">picco → valle</div></div>
+      <div class="metric"><div class="metric-label">Win rate</div><div class="metric-value" style="color:${mc(s.winRate-50)}">${s.winRate.toFixed(0)}%</div><div class="metric-sub">${s.nWins}W / ${s.nLosses}L</div></div>
+      <div class="metric"><div class="metric-label">Profit factor</div><div class="metric-value" style="color:${s.profitFactor>=1.5?'var(--teal)':s.profitFactor>=1?'var(--amber)':'var(--red)'}">${s.profitFactor > 99 ? '∞' : s.profitFactor.toFixed(2)}</div><div class="metric-sub">>1.5 = buono</div></div>
+      <div class="metric"><div class="metric-label">Capitale finale</div><div class="metric-value" style="font-size:16px;color:${mc(s.finalCapital-s.initCapital)}">${fmtEur(s.finalCapital)}</div><div class="metric-sub">da ${fmtEur(s.initCapital)}</div></div>
+    `;
+
+    // equity chart
+    destroyChart('equity');
+    const equityLabels = labels.slice(0, result.equity.length);
+    state.charts['equity'] = new Chart(document.getElementById('equity-chart'), {
+      type: 'line',
+      data: {
+        labels: equityLabels,
+        datasets: [
+          { label: 'Strategia', data: result.equity.map(v => +v.toFixed(2)), borderColor: '#F0B429', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+          { label: 'Buy & hold', data: result.bh.slice(0, result.equity.length).map(v => +v.toFixed(2)), borderColor: '#5E6C8E', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, tension: 0.3, fill: false }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: { label: c => c.dataset.label + ': ' + fmtEur(c.parsed.y) } } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 8, font: { size: 11 } }, grid: { display: false } },
+          y: { ticks: { callback: v => fmtEur(v), font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } }
+        }
+      }
+    });
+
+    // returns distribution
+    destroyChart('returns');
+    const pnls = result.trades.map(t => t.pnlPct);
+    const bins = [-25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25];
+    const counts = bins.map((b, i) => pnls.filter(p => p >= b && p < (bins[i + 1] ?? 999)).length);
+    const barColors = bins.map(b => b >= 0 ? '#2DD4A7' : '#F4694C');
+    state.charts['returns'] = new Chart(document.getElementById('returns-chart'), {
+      type: 'bar',
+      data: { labels: bins.map(b => `${b > 0 ? '+' : ''}${b}%`), datasets: [{ data: counts, backgroundColor: barColors, borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } }, grid: { display: false } }, y: { ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: 'rgba(128,128,128,0.1)' } } } }
+    });
+
+    // score chart with entry/exit markers
+    destroyChart('score');
+    const entryPts = new Array(result.scores.length).fill(null);
+    const exitPts = new Array(result.scores.length).fill(null);
+    result.trades.forEach(t => { if (t.entryIdx < entryPts.length) entryPts[t.entryIdx] = result.scores[t.entryIdx]; if (t.exitIdx < exitPts.length) exitPts[t.exitIdx] = result.scores[t.exitIdx]; });
+    state.charts['score'] = new Chart(document.getElementById('score-chart'), {
+      type: 'line',
+      data: {
+        labels: labels.slice(0, result.scores.length),
+        datasets: [
+          { label: 'Score', data: result.scores, borderColor: '#5B9DFF', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
+          { label: 'Entry', data: entryPts, pointStyle: 'triangle', pointRadius: 7, borderColor: '#2DD4A7', backgroundColor: '#2DD4A7', showLine: false },
+          { label: 'Exit', data: exitPts, pointStyle: 'rectRot', pointRadius: 6, borderColor: '#F4694C', backgroundColor: '#F4694C', showLine: false }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8, font: { size: 10 } }, grid: { display: false } }, y: { min: 0, max: 100, ticks: { font: { size: 10 } }, grid: { color: 'rgba(128,128,128,0.1)' } } } }
+    });
+
+    // trade table
+    document.getElementById('bt-trade-body').innerHTML = result.trades.map((t, i) => `
+      <tr>
+        <td>#${i + 1}</td>
+        <td>${t.entryDate}</td>
+        <td>${t.exitDate}</td>
+        <td class="${t.pnlPct >= 0 ? 'pnl-pos' : 'pnl-neg'}">${fmtPct(t.pnlPct)}</td>
+        <td class="${t.pnlPct >= 0 ? 'pnl-pos' : 'pnl-neg'}">${t.pnlEur >= 0 ? '+' : ''}${fmtEur(t.pnlEur)}</td>
+        <td>${t.score}</td>
+        <td><span class="badge ${t.reason === 'take profit' ? 'badge-green' : t.reason === 'stop loss' ? 'badge-red' : 'badge-amber'}">${t.reason}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  async function runMultiBacktest() {
+    const btn = document.getElementById('multi-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Caricamento...'; }
+    const days = parseInt(document.getElementById('bt-days')?.value || 180);
+    const entryThresh = parseInt(document.getElementById('entry-thresh')?.value || 60);
+    const stopPct = parseInt(document.getElementById('bt-stop')?.value || 8);
+    const tpPct = parseInt(document.getElementById('bt-tp')?.value || 20);
+    const capital = parseFloat(document.getElementById('bt-capital')?.value || 10000);
+    const posSizePct = parseInt(document.getElementById('bt-possize')?.value || 20);
+    const COINS = [
+      { id: 'bitcoin', label: 'BTC' }, { id: 'ethereum', label: 'ETH' },
+      { id: 'solana', label: 'SOL' }, { id: 'chainlink', label: 'LINK' },
+      { id: 'avalanche-2', label: 'AVAX' }, { id: 'polkadot', label: 'DOT' }
+    ];
+    const results = [];
+    for (let i = 0; i < COINS.length; i++) {
+      const c = COINS[i];
+      setStatus('multi-status', `Caricamento ${c.label} (${i + 1}/${COINS.length})...`, 'loading');
+      try {
+        if (i > 0) await sleep(1200);
+        const mc = await API.getMarketChart(c.id, days);
+        const prices = mc.prices.map(p => p[1]);
+        const volumes = mc.total_volumes.map(v => v[1]);
+        const labels = mc.prices.map(p => new Date(p[0]).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' }));
+        const result = Backtest.run(prices, volumes, labels, { entryThresh, stopPct, tpPct, capitalInit: capital, posSizePct }, state.btActiveSigs);
+        const s = Backtest.stats(result.equity, result.trades, result.bh);
+        results.push({ ticker: c.label, ...s });
+      } catch { results.push({ ticker: c.label, totalReturn: null, error: true }); }
+    }
+
+    results.sort((a, b) => (b.totalReturn || -999) - (a.totalReturn || -999));
+    const maxRet = Math.max(0, ...results.filter(r => !r.error).map(r => r.totalReturn || 0));
+
+    setStatus('multi-status', 'Confronto completato.', 'success');
+    document.getElementById('compare-output').innerHTML = results.map(r => r.error ? `
+      <div class="compare-row"><span class="compare-ticker">${r.ticker}</span><span style="color:var(--text-muted);font-size:12px">Errore caricamento dati</span></div>
+    ` : `
+      <div class="compare-row">
+        <span class="compare-ticker">${r.ticker}</span>
+        <div class="compare-bar-wrap">
+          <div class="compare-bar"><div class="compare-fill" style="width:${maxRet > 0 ? (Math.max(0, r.totalReturn) / maxRet * 100).toFixed(0) : 0}%;background:${r.totalReturn >= 0 ? '#F0B429' : '#F4694C'}"></div></div>
+        </div>
+        <div class="compare-stats">
+          <div class="compare-stat"><strong style="color:${r.totalReturn >= 0 ? 'var(--teal)' : 'var(--red)'}">${fmtPct(r.totalReturn)}</strong>rendimento</div>
+          <div class="compare-stat"><strong>${r.sharpe.toFixed(2)}</strong>Sharpe</div>
+          <div class="compare-stat"><strong style="color:var(--red)">−${r.maxDD.toFixed(1)}%</strong>drawdown</div>
+          <div class="compare-stat"><strong>${r.winRate.toFixed(0)}%</strong>win rate</div>
+          <div class="compare-stat"><strong>${r.nTrades}</strong>trade</div>
+        </div>
+      </div>
+    `).join('');
+
+    if (btn) { btn.disabled = false; btn.innerHTML = svg('player-play') + ' Esegui confronto multi-asset'; }
+  }
+
+  // ── settings ───────────────────────────────────────────────────────────
+  function renderSettings() {
+    const wd = document.getElementById('watchlist-pills');
+    if (wd) wd.innerHTML = state.watchlist.map(id => {
+      const d = state.scannerData.find(c => c.id === id);
+      return `<span class="watchlist-pill">${d?.symbol || id.slice(0,6).toUpperCase()}<button onclick="App.removeCoin('${id}')" aria-label="Rimuovi ${id}">×</button></span>`;
+    }).join('');
+
+    const wc = document.getElementById('weights-config');
+    if (wc) {
+      const labels = { dev: 'Dev activity', whale: 'Whale flow', tokenomics: 'Tokenomics', catalyst: 'Catalyst', rotation: 'Rotazione settore' };
+      wc.innerHTML = Object.entries(state.weights).map(([k, v]) => `
+        <div class="ctrl-row">
+          <label>${labels[k]}</label>
+          <input type="range" min="5" max="50" value="${v}" step="5" oninput="App.updateWeight('${k}',parseInt(this.value));document.getElementById('w-${k}').textContent=this.value" style="flex:1">
+          <span id="w-${k}" class="val-display">${v}</span>
+        </div>
+      `).join('');
+    }
+
+    const intervalSel = document.getElementById('auto-refresh');
+    if (intervalSel) intervalSel.value = state.autoRefreshInterval;
+  }
+
+  function updateWeight(key, val) {
+    state.weights[key] = val;
+    persistState();
+  }
+
+  function addCoin() {
+    const input = document.getElementById('new-coin');
+    const val = input?.value?.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!val || state.watchlist.includes(val)) return;
+    state.watchlist.push(val);
+    input.value = '';
+    persistState();
+    renderSettings();
+  }
+
+  function removeCoin(id) {
+    state.watchlist = state.watchlist.filter(c => c !== id);
+    state.scannerData = state.scannerData.filter(d => d.id !== id);
+    persistState();
+    renderSettings();
+    renderScanner();
+  }
+
+  function setAutoRefresh(seconds) {
+    state.autoRefreshInterval = parseInt(seconds);
+    if (state.autoRefreshTimer) clearInterval(state.autoRefreshTimer);
+    if (state.autoRefreshInterval > 0) state.autoRefreshTimer = setInterval(refresh, state.autoRefreshInterval * 1000);
+  }
+
+  function openBacktestFor(coinId) {
+    const sel = document.getElementById('bt-coin');
+    if (sel) {
+      for (const opt of sel.options) { if (opt.value === coinId) { opt.selected = true; break; } }
+    }
+    showPage('backtest-config');
+  }
+
+  function addToWatchlist(coinId, goTo) {
+    if (goTo === 'portfolio') showPage('portfolio');
+  }
+
+  function toggleBtSig(btn) {
+    const s = btn.dataset.sig;
+    if (state.btActiveSigs.has(s)) { state.btActiveSigs.delete(s); btn.classList.remove('on'); }
+    else { state.btActiveSigs.add(s); btn.classList.add('on'); }
+  }
+
+  // ── SVG icon helpers ───────────────────────────────────────────────────
+  const ICONS = {
+    refresh: '<polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path>',
+    plus: '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>',
+    trash: '<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6m4-6v6"></path><path d="M9 6V4h6v2"></path>',
+    'chart-line': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
+    'player-play': '<polygon points="5 3 19 12 5 21 5 3"></polygon>',
+    code: '<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>',
+    fish: '<path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.46-3.44 6-7 6s-7.56-2.54-8.5-6z"></path><path d="M18 12v.5"></path>',
+    flame: '<path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"></path>',
+    rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"></path>',
+    'arrows-exchange': '<polyline points="7 16 3 12 7 8"></polyline><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="17 8 21 12 17 16"></polyline>',
+    radar: '<circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path>',
+    wallet: '<path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path>'
+  };
+
+  function svg(name, size = 14) {
+    const d = ICONS[name] || '';
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  }
+
+  function svgBig(name) { return svg(name, 36); }
+
+  // ── init ───────────────────────────────────────────────────────────────
+  function init() {
+    loadPersistedState();
+
+    if (window.Chart) {
+      Chart.defaults.color = '#92A0C0';
+      Chart.defaults.borderColor = 'rgba(141,159,200,0.12)';
+      Chart.defaults.font.family = "'JetBrains Mono', monospace";
+      Chart.defaults.font.size = 10;
+    }
+
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => showPage(tab.dataset.page));
+    });
+
+    document.getElementById('btn-refresh')?.addEventListener('click', refresh);
+    document.getElementById('filter-score')?.addEventListener('change', renderScanner);
+    document.getElementById('filter-signal')?.addEventListener('change', renderScanner);
+    document.getElementById('sort-by')?.addEventListener('change', renderScanner);
+    document.getElementById('budget')?.addEventListener('input', renderPortfolio);
+    document.getElementById('risk-pct')?.addEventListener('input', () => {
+      document.getElementById('risk-val').textContent = document.getElementById('risk-pct').value + '%';
+      renderPortfolio();
+    });
+    document.getElementById('max-pos')?.addEventListener('input', () => {
+      document.getElementById('pos-val').textContent = document.getElementById('max-pos').value;
+      renderPortfolio();
+    });
+    document.getElementById('bt-run-btn')?.addEventListener('click', runBacktest);
+    document.getElementById('multi-btn')?.addEventListener('click', runMultiBacktest);
+    document.getElementById('btn-add-coin')?.addEventListener('click', addCoin);
+    document.getElementById('new-coin')?.addEventListener('keydown', e => { if (e.key === 'Enter') addCoin(); });
+    document.getElementById('btn-add-alert')?.addEventListener('click', addAlert);
+    document.getElementById('auto-refresh')?.addEventListener('change', e => setAutoRefresh(e.target.value));
+
+    document.querySelectorAll('.bt-sig-btn').forEach(btn => {
+      btn.addEventListener('click', () => toggleBtSig(btn));
+    });
+
+    document.getElementById('bt-stop')?.addEventListener('input', () => {
+      document.getElementById('bt-stop-val').textContent = document.getElementById('bt-stop').value + '%';
+    });
+    document.getElementById('bt-tp')?.addEventListener('input', () => {
+      document.getElementById('bt-tp-val').textContent = document.getElementById('bt-tp').value + '%';
+    });
+    document.getElementById('bt-possize')?.addEventListener('input', () => {
+      document.getElementById('bt-possize-val').textContent = document.getElementById('bt-possize').value + '%';
+    });
+    document.getElementById('entry-thresh')?.addEventListener('input', () => {
+      document.getElementById('et-val').textContent = document.getElementById('entry-thresh').value;
+    });
+
+    renderScanner();
+    renderSettings();
+  }
+
+  return {
+    init, refresh, showPage,
+    toggleDetail, renderPortfolio,
+    addAlert, removeAlert, renderAlertLog,
+    runBacktest, runMultiBacktest,
+    addCoin, removeCoin, updateWeight,
+    openBacktestFor, addToWatchlist, toggleBtSig
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
+
+</script>
 
 </body>
 </html>
