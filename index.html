@@ -479,6 +479,52 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 #toast.visible { transform: translateY(0); opacity: 1; }
 
 /* ── Responsive ─────────────────────────────────────── */
+
+/* ── Discovery ─────────────────────────────────────── */
+.disco-source-btns { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+.disco-src-btn {
+  font-size: 12px; padding: 7px 14px; border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--border-strong); background: transparent; color: var(--text-muted);
+  transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+}
+.disco-src-btn:hover { border-color: var(--text-secondary); color: var(--text-secondary); background: transparent; }
+.disco-src-btn.on { background: var(--amber-dim); border-color: rgba(240,180,41,0.45); color: var(--amber); font-weight: 600; }
+.disco-src-btn svg { width: 13px; height: 13px; }
+
+.tier-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9.5px; font-family: var(--font-mono); font-weight: 700;
+  padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tier-micro { background: var(--purple-dim); color: var(--purple); }
+.tier-small { background: var(--blue-dim); color: var(--blue); }
+.tier-mid { background: var(--teal-dim); color: var(--teal); }
+.tier-large { background: var(--amber-dim); color: var(--amber); }
+
+.cat-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 4px 10px; border-radius: 16px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+}
+.cat-pill:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+.cat-pill.on { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); font-weight: 600; }
+
+.disco-progress { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin: 10px 0; }
+.disco-progress-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--bg-hover); overflow: hidden; }
+.disco-progress-fill { height: 100%; background: var(--amber); border-radius: 2px; transition: width 0.3s; }
+
+.disco-result-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  transition: border-color 0.2s; cursor: pointer;
+}
+.disco-result-card:hover { border-color: rgba(240,180,41,0.35); }
+.disco-results-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+
+.disco-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+
+/* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 640px) {
   .main-content { padding: 1.1rem 0.9rem 2.5rem; }
   header { padding: 0 1rem; }
@@ -525,6 +571,10 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
     <button class="nav-tab active" data-page="scanner" role="tab">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path></svg>
       Scanner
+    </button>
+    <button class="nav-tab" data-page="discovery" role="tab">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+      Discovery
     </button>
     <button class="nav-tab" data-page="portfolio" role="tab">
       <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
@@ -597,6 +647,77 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
           <p>Premi <strong>Aggiorna</strong> in alto a destra per caricare i dati.</p>
         </div>
       </div>
+    </div>
+
+    <!-- ── DISCOVERY ── -->
+    <div id="page-discovery" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Fonte di scoperta
+        </div>
+        <div class="disco-source-btns">
+          <button class="disco-src-btn on" data-source="trending" onclick="App.setDiscoSource(this)">🔥 Trending 24h</button>
+          <button class="disco-src-btn" data-source="gainers" onclick="App.setDiscoSource(this)">📈 Top gainers 24h</button>
+          <button class="disco-src-btn" data-source="volume" onclick="App.setDiscoSource(this)">📊 Volume anomalo</button>
+          <button class="disco-src-btn" data-source="micro" onclick="App.setDiscoSource(this)">🔬 Micro-cap gems</button>
+          <button class="disco-src-btn" data-source="small" onclick="App.setDiscoSource(this)">💎 Small-cap rising</button>
+          <button class="disco-src-btn" data-source="category" onclick="App.setDiscoSource(this)">🏷️ Per categoria</button>
+        </div>
+        <div id="disco-categories" style="display:none;margin-top:10px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em">Seleziona categoria</div>
+          <div id="disco-cat-pills" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          Filtri automatici
+        </div>
+        <div class="disco-filters">
+          <div class="ctrl-row" style="margin-bottom:0">
+            <label for="disco-min-vol" style="min-width:130px">Volume min 24h</label>
+            <select id="disco-min-vol" style="font-size:12px">
+              <option value="50000">$50K</option>
+              <option value="100000" selected>$100K</option>
+              <option value="500000">$500K</option>
+              <option value="1000000">$1M</option>
+            </select>
+          </div>
+          <div class="ctrl-row" style="margin-bottom:0">
+            <label for="disco-min-mcap" style="min-width:130px">Market cap min</label>
+            <select id="disco-min-mcap" style="font-size:12px">
+              <option value="100000">$100K</option>
+              <option value="500000" selected>$500K</option>
+              <option value="5000000">$5M</option>
+              <option value="50000000">$50M</option>
+            </select>
+          </div>
+          <div class="ctrl-row" style="margin-bottom:0">
+            <label for="disco-max-results" style="min-width:130px">Max risultati</label>
+            <select id="disco-max-results" style="font-size:12px">
+              <option value="15">15</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="disco-status" class="status-bar">Seleziona una fonte e premi "Cerca" per scoprire nuove crypto.</div>
+      <button class="btn-primary" id="btn-discover" onclick="App.runDiscovery()" style="margin-bottom:14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Cerca crypto emergenti
+      </button>
+
+      <div id="disco-progress" class="disco-progress" style="display:none">
+        <div class="disco-progress-bar"><div class="disco-progress-fill" id="disco-progress-fill" style="width:0%"></div></div>
+        <span id="disco-progress-text">0%</span>
+      </div>
+
+      <div class="metric-grid" id="disco-metrics" style="display:none"></div>
+      <div class="disco-results-grid" id="disco-results"></div>
     </div>
 
     <!-- ── PORTFOLIO ── -->
@@ -942,7 +1063,25 @@ const API = (() => {
 
   function clearCache() { cache.clear(); }
 
-  return { getCoinDetail, getMarketChart, getOHLC, getGlobal, getMarketsPage, clearCache };
+  async function getTrending() {
+    const d = await get('/search/trending');
+    return (d.coins || []).map(c => c.item);
+  }
+
+  async function getMarketsBulk(params = {}) {
+    const defaults = { vs_currency: 'eur', order: 'market_cap_desc', per_page: 50, page: 1, sparkline: false, price_change_percentage: '24h,7d' };
+    return get('/coins/markets', { ...defaults, ...params });
+  }
+
+  async function getCategoriesList() {
+    return get('/coins/categories/list');
+  }
+
+  async function getMarketsByCategory(categoryId, perPage = 50) {
+    return get('/coins/markets', { vs_currency: 'eur', category: categoryId, order: 'market_cap_desc', per_page: perPage, page: 1, sparkline: false, price_change_percentage: '24h,7d' });
+  }
+
+  return { getCoinDetail, getMarketChart, getOHLC, getGlobal, getMarketsPage, clearCache, getTrending, getMarketsBulk, getCategoriesList, getMarketsByCategory };
 })();
 
 
@@ -2022,7 +2161,15 @@ const App = (() => {
   function openBacktestFor(coinId) {
     const sel = document.getElementById('bt-coin');
     if (sel) {
-      for (const opt of sel.options) { if (opt.value === coinId) { opt.selected = true; break; } }
+      let found = false;
+      for (const opt of sel.options) { if (opt.value === coinId) { opt.selected = true; found = true; break; } }
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = coinId;
+        opt.textContent = coinId.charAt(0).toUpperCase() + coinId.slice(1).replace(/-/g, ' ');
+        sel.appendChild(opt);
+        opt.selected = true;
+      }
     }
     showPage('backtest-config');
   }
@@ -2116,13 +2263,280 @@ const App = (() => {
     renderSettings();
   }
 
+  // ── discovery ──────────────────────────────────────────────────────────
+  let discoSource = 'trending';
+  let discoCategory = '';
+
+  function tierLabel(mcap) {
+    if (mcap < 5e7) return { text: 'MICRO', cls: 'tier-micro' };
+    if (mcap < 5e8) return { text: 'SMALL', cls: 'tier-small' };
+    if (mcap < 5e9) return { text: 'MID', cls: 'tier-mid' };
+    return { text: 'LARGE', cls: 'tier-large' };
+  }
+
+  function fmtShort(n) {
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
+    return '$' + n.toFixed(0);
+  }
+
+  function setDiscoSource(btn) {
+    document.querySelectorAll('.disco-src-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    discoSource = btn.dataset.source;
+    const catPanel = document.getElementById('disco-categories');
+    if (discoSource === 'category') {
+      catPanel.style.display = 'block';
+      loadCategories();
+    } else {
+      catPanel.style.display = 'none';
+    }
+  }
+
+  async function loadCategories() {
+    const el = document.getElementById('disco-cat-pills');
+    if (!el) return;
+    el.innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Caricamento categorie...</span>';
+    try {
+      const cats = await API.getCategoriesList();
+      const popular = ['decentralized-finance-defi','layer-1','layer-2','artificial-intelligence','gaming','meme-token',
+        'real-world-assets-rwa','decentralized-exchange','lending-borrowing','oracle','privacy-coins',
+        'storage','interoperability','zero-knowledge-proofs','restaking','liquid-staking-tokens','depin'];
+      const filtered = cats.filter(c => popular.includes(c.category_id));
+      el.innerHTML = filtered.map(c => `<span class="cat-pill${discoCategory === c.category_id ? ' on' : ''}" onclick="App.selectCategory('${c.category_id}',this)">${c.name}</span>`).join('');
+    } catch (e) {
+      el.innerHTML = '<span style="font-size:12px;color:var(--coral)">Errore: ' + e.message + '</span>';
+    }
+  }
+
+  function selectCategory(id, el) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('on'));
+    el.classList.add('on');
+    discoCategory = id;
+  }
+
+  function setDiscoStatus(msg, type) {
+    const el = document.getElementById('disco-status');
+    if (!el) return;
+    el.className = 'status-bar' + (type ? ' ' + type : '');
+    el.innerHTML = type === 'loading' ? `<div class="spinner"></div> ${msg}` : msg;
+  }
+
+  function setDiscoProgress(pct, label) {
+    const wrap = document.getElementById('disco-progress');
+    const fill = document.getElementById('disco-progress-fill');
+    const text = document.getElementById('disco-progress-text');
+    if (wrap) wrap.style.display = pct > 0 ? 'flex' : 'none';
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = label || (pct + '%');
+  }
+
+  async function runDiscovery() {
+    const btn = document.getElementById('btn-discover');
+    if (btn) { btn.disabled = true; btn.textContent = 'Analisi in corso...'; }
+    setDiscoProgress(5, 'Avvio...');
+    setDiscoStatus('Recupero lista crypto...', 'loading');
+
+    const minVol = parseInt(document.getElementById('disco-min-vol')?.value || 100000);
+    const minMcap = parseInt(document.getElementById('disco-min-mcap')?.value || 500000);
+    const maxResults = parseInt(document.getElementById('disco-max-results')?.value || 25);
+
+    try {
+      let rawCoins = [];
+
+      if (discoSource === 'trending') {
+        setDiscoStatus('Recupero trending coins...', 'loading');
+        const trending = await API.getTrending();
+        const trendIds = trending.map(t => t.id).filter(Boolean);
+        if (trendIds.length) {
+          await sleep(600);
+          rawCoins = await API.getMarketsBulk({ ids: trendIds.join(','), per_page: 30 });
+        }
+      } else if (discoSource === 'gainers') {
+        setDiscoStatus('Recupero top gainers...', 'loading');
+        rawCoins = await API.getMarketsBulk({ order: 'market_cap_desc', per_page: 250 });
+        rawCoins.sort((a, b) => (b.price_change_percentage_24h_in_currency || 0) - (a.price_change_percentage_24h_in_currency || 0));
+      } else if (discoSource === 'volume') {
+        setDiscoStatus('Analisi volumi anomali...', 'loading');
+        rawCoins = await API.getMarketsBulk({ order: 'volume_desc', per_page: 150 });
+      } else if (discoSource === 'micro') {
+        setDiscoStatus('Scansione micro-cap ($100K-$50M)...', 'loading');
+        rawCoins = await API.getMarketsBulk({ order: 'volume_desc', per_page: 250, page: 3 });
+        rawCoins = rawCoins.filter(c => (c.market_cap || 0) < 5e7 && (c.market_cap || 0) > 1e5);
+      } else if (discoSource === 'small') {
+        setDiscoStatus('Scansione small-cap ($50M-$500M)...', 'loading');
+        rawCoins = await API.getMarketsBulk({ order: 'volume_desc', per_page: 250, page: 2 });
+        rawCoins = rawCoins.filter(c => (c.market_cap || 0) >= 5e7 && (c.market_cap || 0) < 5e8);
+      } else if (discoSource === 'category') {
+        if (!discoCategory) { setDiscoStatus('Seleziona una categoria prima.', ''); if (btn) { btn.disabled = false; btn.innerHTML = svgSearch() + ' Cerca crypto emergenti'; } setDiscoProgress(0); return; }
+        setDiscoStatus(`Scansione categoria...`, 'loading');
+        rawCoins = await API.getMarketsByCategory(discoCategory, 100);
+      }
+
+      setDiscoProgress(20, 'Filtraggio...');
+
+      // apply filters
+      let filtered = rawCoins.filter(c => {
+        if ((c.total_volume || 0) < minVol) return false;
+        if ((c.market_cap || 0) < minMcap) return false;
+        return true;
+      });
+
+      // sort by volume/mcap ratio (proxy for unusual activity)
+      filtered.forEach(c => { c._volRatio = (c.total_volume || 0) / (c.market_cap || 1); });
+      if (discoSource === 'gainers') {
+        // keep sorted by 24h change
+      } else if (discoSource === 'volume') {
+        filtered.sort((a, b) => b._volRatio - a._volRatio);
+      } else {
+        filtered.sort((a, b) => b._volRatio - a._volRatio);
+      }
+
+      filtered = filtered.slice(0, maxResults);
+      setDiscoProgress(30, `Analisi segnali su ${filtered.length} crypto...`);
+      setDiscoStatus(`Analisi approfondita di ${filtered.length} crypto...`, 'loading');
+
+      // Deep scan: fetch detail for each coin and compute signals
+      if (!state.globalData) state.globalData = await API.getGlobal();
+      const scanned = [];
+
+      for (let i = 0; i < filtered.length; i++) {
+        const c = filtered[i];
+        const pct = 30 + Math.round((i / filtered.length) * 65);
+        setDiscoProgress(pct, `${c.name} (${i + 1}/${filtered.length})`);
+        try {
+          if (i > 0) await sleep(700);
+          const detail = await API.getCoinDetail(c.id);
+          const signals = Signals.computeAll(detail, state.globalData, state.weights);
+          scanned.push({
+            id: c.id,
+            name: c.name || detail.name,
+            symbol: (c.symbol || detail.symbol || '').toUpperCase(),
+            price: c.current_price || 0,
+            change24h: c.price_change_percentage_24h || 0,
+            change7d: c.price_change_percentage_7d_in_currency || 0,
+            mcap: c.market_cap || 0,
+            volume: c.total_volume || 0,
+            rank: c.market_cap_rank || detail.market_cap_rank || 999,
+            volRatio: c._volRatio || 0,
+            signals
+          });
+        } catch (e) {
+          // skip coin on error, continue
+        }
+      }
+
+      scanned.sort((a, b) => b.signals.composite - a.signals.composite);
+      setDiscoProgress(100, 'Completato');
+      setDiscoStatus(`Trovate ${scanned.length} crypto · ordinate per composite score`, 'success');
+
+      renderDiscoResults(scanned);
+
+    } catch (e) {
+      setDiscoStatus('Errore: ' + e.message + '. Riprova tra 30 secondi (rate limit CoinGecko).', 'error');
+    }
+
+    setDiscoProgress(0);
+    if (btn) { btn.disabled = false; btn.innerHTML = svgSearch() + ' Cerca crypto emergenti'; }
+  }
+
+  function svgSearch() {
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+  }
+
+  function renderDiscoResults(coins) {
+    const metricsEl = document.getElementById('disco-metrics');
+    const resultsEl = document.getElementById('disco-results');
+    if (!metricsEl || !resultsEl) return;
+
+    metricsEl.style.display = 'grid';
+    const strong = coins.filter(c => c.signals.composite >= 72).length;
+    const avg = coins.length ? Math.round(coins.reduce((s, c) => s + c.signals.composite, 0) / coins.length) : 0;
+    const avgVol = coins.length ? coins.reduce((s, c) => s + c.volRatio, 0) / coins.length : 0;
+
+    metricsEl.innerHTML = `
+      <div class="metric"><div class="metric-label">CRYPTO ANALIZZATE</div><div class="metric-value">${coins.length}</div></div>
+      <div class="metric"><div class="metric-label">SEGNALI FORTI</div><div class="metric-value score-high">${strong}</div><div class="metric-sub">score ≥ 72</div></div>
+      <div class="metric"><div class="metric-label">SCORE MEDIO</div><div class="metric-value">${avg}</div></div>
+      <div class="metric"><div class="metric-label">VOL/MCAP MEDIO</div><div class="metric-value num">${(avgVol * 100).toFixed(1)}%</div><div class="metric-sub">>5% = anomalo</div></div>
+    `;
+
+    if (!coins.length) {
+      resultsEl.innerHTML = '<div class="empty-state"><p>Nessuna crypto corrisponde ai filtri. Prova a ridurre il volume o market cap minimo.</p></div>';
+      return;
+    }
+
+    resultsEl.innerHTML = coins.map((d, i) => {
+      const sig = d.signals;
+      const tier = tierLabel(d.mcap);
+      const color = PALETTE[i % PALETTE.length];
+      const changeBadge = d.change24h >= 0 ? 'badge-green' : 'badge-red';
+      const inWatchlist = state.watchlist.includes(d.id);
+      const sigKeys = ['dev', 'whale', 'tokenomics', 'catalyst', 'rotation'];
+      const sigLabels = { dev: 'Dev', whale: 'Whale', tokenomics: 'Supply', catalyst: 'Cat.', rotation: 'Rot.' };
+
+      return `
+      <div class="disco-result-card" onclick="App.toggleDiscoDetail('disco-d-${d.id}')">
+        <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${d.symbol.slice(0, 3)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-family:var(--font-display);font-size:14px;font-weight:600">${d.name}</span>
+            <span class="tier-badge ${tier.cls}">${tier.text}</span>
+            <span class="badge ${changeBadge}">${fmtPct(d.change24h)}</span>
+            ${inWatchlist ? '<span class="badge badge-amber">in watchlist</span>' : ''}
+          </div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">
+            <span>${d.symbol}</span>
+            <span class="num">${d.price >= 1 ? fmtEur(d.price) : '€' + d.price.toFixed(d.price < 0.01 ? 6 : 4)}</span>
+            <span>MCap: ${fmtShort(d.mcap)}</span>
+            <span>Vol: ${fmtShort(d.volume)}</span>
+            <span>V/MC: ${(d.volRatio * 100).toFixed(1)}%</span>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:7px;flex-wrap:wrap">
+            ${sigKeys.map(k => `<span style="font-size:10.5px"><span style="color:var(--text-muted)">${sigLabels[k]}</span> <span class="${scoreClass(sig[k].score)}" style="font-family:var(--font-mono);font-weight:700">${sig[k].score}</span></span>`).join('')}
+          </div>
+          <div id="disco-d-${d.id}" class="coin-detail" style="margin-top:10px;padding-top:10px">
+            ${sig.dev.reasons?.length ? `<div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:6px">${[...sig.dev.reasons, ...sig.whale.reasons, ...sig.tokenomics.reasons, ...sig.catalyst.reasons, ...sig.rotation.reasons].slice(0,5).join(' · ')}</div>` : ''}
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              ${!inWatchlist ? `<button onclick="event.stopPropagation();App.addDiscoCoin('${d.id}')" style="font-size:11px;padding:5px 10px">${svg('plus')} Aggiungi alla watchlist</button>` : ''}
+              <button onclick="event.stopPropagation();App.openBacktestFor('${d.id}')" style="font-size:11px;padding:5px 10px">${svg('chart-line')} Backtesta</button>
+            </div>
+          </div>
+        </div>
+        ${scoreRing(sig.composite, 52)}
+      </div>`;
+    }).join('');
+  }
+
+  function toggleDiscoDetail(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+
+  function addDiscoCoin(id) {
+    if (!state.watchlist.includes(id)) {
+      state.watchlist.push(id);
+      persistState();
+      renderSettings();
+      // also add to scannerData if we have it from discovery
+      setDiscoStatus(`${id} aggiunto alla watchlist. Premi Aggiorna nello Scanner per caricare i segnali.`, 'success');
+      // re-render discovery to show "in watchlist" badge
+      const btn = document.querySelector(`[onclick*="addDiscoCoin('${id}')"]`);
+      if (btn) btn.closest('.disco-result-card')?.querySelector('.tier-badge')?.insertAdjacentHTML('afterend', ' <span class="badge badge-amber">in watchlist</span>');
+      if (btn) btn.remove();
+    }
+  }
+
   return {
     init, refresh, showPage,
     toggleDetail, renderPortfolio,
     addAlert, removeAlert, renderAlertLog,
     runBacktest, runMultiBacktest,
     addCoin, removeCoin, updateWeight,
-    openBacktestFor, addToWatchlist, toggleBtSig
+    openBacktestFor, addToWatchlist, toggleBtSig,
+    setDiscoSource, selectCategory, runDiscovery,
+    toggleDiscoDetail, addDiscoCoin
   };
 })();
 
