@@ -480,6 +480,55 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 
 /* ── Responsive ─────────────────────────────────────── */
 
+/* ── Today / Verdicts ───────────────────────────────── */
+.today-banner {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elev));
+  border: 1px solid var(--border-strong); border-radius: var(--radius-lg);
+  padding: 16px 18px; margin-bottom: 1rem;
+}
+.today-banner-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--amber-dim); }
+.today-banner-icon svg { width: 22px; height: 22px; stroke: var(--amber); fill: none; }
+
+.verdict-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.verdict-row:last-child { border-bottom: none; }
+.verdict-coin { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1; }
+.verdict-info { min-width: 0; }
+.verdict-name { font-family: var(--font-display); font-size: 14px; font-weight: 600; }
+.verdict-meta { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+.verdict-meta .num { font-family: var(--font-mono); }
+
+.verdict-action {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+  min-width: 130px;
+}
+.verdict-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-display); font-size: 13px; font-weight: 700;
+  padding: 6px 14px; border-radius: 20px; letter-spacing: 0.02em;
+}
+.verdict-badge svg { width: 14px; height: 14px; }
+.v-buy { background: var(--teal-dim); color: var(--teal); }
+.v-add { background: rgba(45,212,167,0.08); color: var(--teal); border: 1px solid var(--teal-dim); }
+.v-hold { background: var(--bg-hover); color: var(--text-secondary); }
+.v-reduce { background: var(--amber-dim); color: var(--amber); }
+.v-sell { background: var(--coral-dim); color: var(--coral); }
+.verdict-reason { font-size: 11px; color: var(--text-muted); text-align: right; max-width: 180px; line-height: 1.35; }
+
+.score-trend { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+.trend-up { color: var(--teal); }
+.trend-down { color: var(--coral); }
+.trend-flat { color: var(--text-muted); }
+
+.pos-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.pos-row:last-child { border-bottom: none; }
+
 /* ── Discovery ─────────────────────────────────────── */
 .disco-source-btns { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
 .disco-src-btn {
@@ -569,7 +618,11 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 
   <!-- Nav tabs -->
   <nav class="nav-tabs" role="tablist">
-    <button class="nav-tab active" data-page="scanner" role="tab">
+    <button class="nav-tab active" data-page="today" role="tab">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+      Oggi
+    </button>
+    <button class="nav-tab" data-page="scanner" role="tab">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path></svg>
       Scanner
     </button>
@@ -601,8 +654,106 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 
   <main class="main-content">
 
+    <!-- ── OGGI ── -->
+    <div id="page-today" class="page active" role="tabpanel">
+      <div id="today-banner" class="today-banner">
+        <div class="today-banner-icon" id="today-banner-icon"></div>
+        <div style="flex:1">
+          <div id="today-banner-title" style="font-family:var(--font-display);font-size:15px;font-weight:600">Benvenuto</div>
+          <div id="today-banner-sub" style="font-size:12.5px;color:var(--text-secondary);margin-top:2px">Premi "Aggiorna segnali" per analizzare il tuo portafoglio e il mercato.</div>
+        </div>
+        <button class="btn-primary" id="btn-today-refresh" onclick="App.refreshToday()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+          Aggiorna segnali
+        </button>
+      </div>
+
+      <div id="today-status" class="status-bar" style="display:none"></div>
+
+      <!-- Market pulse -->
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          Polso del mercato
+        </div>
+        <div class="metric-grid" id="today-market" style="margin-bottom:0">
+          <div class="metric"><div class="metric-label">Fear &amp; Greed</div><div class="metric-value">—</div></div>
+          <div class="metric"><div class="metric-label">BTC dominance</div><div class="metric-value">—</div></div>
+          <div class="metric"><div class="metric-label">Fase ciclo</div><div class="metric-value" style="font-size:15px">—</div></div>
+          <div class="metric"><div class="metric-label">Clima</div><div class="metric-value" style="font-size:15px">—</div></div>
+        </div>
+      </div>
+
+      <!-- Portfolio verdicts -->
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
+            Il tuo portafoglio — cosa fare oggi
+          </span>
+          <button onclick="App.showPage('positions')" style="font-size:12px;padding:6px 12px">Gestisci posizioni</button>
+        </div>
+        <div id="today-verdicts">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
+            <p>Non hai ancora inserito le tue posizioni.<br>Aggiungile per ricevere indicazioni operative.</p>
+            <button class="btn-primary" onclick="App.showPage('positions')">Aggiungi posizioni</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opportunities from watchlist -->
+      <div class="card" id="today-opps-card" style="display:none">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Opportunità dalla watchlist
+        </div>
+        <div id="today-opps"></div>
+      </div>
+    </div>
+
+    <!-- ── POSIZIONI ── -->
+    <div id="page-positions" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Aggiungi posizione
+        </div>
+        <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px">Inserisci le cripto che possiedi su Coinbase o altre piattaforme. I dati restano salvati solo nel tuo browser.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:140px">
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em">Cripto (ID CoinGecko)</label>
+            <input type="text" id="pos-coin" placeholder="es. bitcoin" style="width:100%">
+          </div>
+          <div style="width:110px">
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em">Quantità</label>
+            <input type="number" id="pos-qty" placeholder="0.5" step="any" style="width:100%">
+          </div>
+          <div style="width:130px">
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em">Prezzo carico (€)</label>
+            <input type="number" id="pos-cost" placeholder="45000" step="any" style="width:100%">
+          </div>
+          <button class="btn-primary" onclick="App.addPosition()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Aggiungi
+          </button>
+        </div>
+        <div id="pos-add-msg" style="font-size:12px;margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path></svg>
+          Le tue posizioni
+        </div>
+        <div id="positions-list">
+          <div style="font-size:13px;color:var(--text-secondary);padding:8px 0">Nessuna posizione inserita.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── SCANNER ── -->
-    <div id="page-scanner" class="page active" role="tabpanel">
+    <div id="page-scanner" class="page" role="tabpanel">
       <div class="metric-grid" id="scanner-metrics">
         <div class="metric"><div class="metric-label">Asset monitorati</div><div class="metric-value">—</div></div>
         <div class="metric"><div class="metric-label">Segnali forti</div><div class="metric-value">—</div></div>
@@ -945,6 +1096,19 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 
     <!-- ── SETTINGS ── -->
     <div id="page-settings" class="page" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          Profilo investitore
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Determina quanto sono reattive le indicazioni COMPRA/VENDI nella schermata Oggi.</p>
+        <div class="signal-toggle" id="profile-toggle">
+          <button class="sig-btn" data-profile="prudent" onclick="App.setProfile(this)">🛡️ Prudente</button>
+          <button class="sig-btn" data-profile="balanced" onclick="App.setProfile(this)">⚖️ Bilanciato</button>
+          <button class="sig-btn on" data-profile="active" onclick="App.setProfile(this)">⚡ Attivo</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
@@ -1661,6 +1825,146 @@ const Alerts = (() => {
   return { load, add, remove, toggle, check, loadLog, TYPE_LABELS };
 })();
 
+// ── HISTORY (score memory across sessions) ──
+const History = (() => {
+  const KEY = 'csa_score_history';
+  const MAX_POINTS = 30; // keep last 30 snapshots per coin
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+  }
+  function save(h) {
+    try { localStorage.setItem(KEY, JSON.stringify(h)); } catch {}
+  }
+
+  // record current composite + sub-scores for a coin
+  function record(coinId, signals) {
+    const h = load();
+    if (!h[coinId]) h[coinId] = [];
+    const last = h[coinId][h[coinId].length - 1];
+    const now = Date.now();
+    // avoid duplicate snapshots within 1 hour
+    if (last && now - last.ts < 60 * 60 * 1000) {
+      h[coinId][h[coinId].length - 1] = { ts: now, c: signals.composite, w: signals.whale.score, hy: signals.hype?.score || 0 };
+    } else {
+      h[coinId].push({ ts: now, c: signals.composite, w: signals.whale.score, hy: signals.hype?.score || 0 });
+    }
+    if (h[coinId].length > MAX_POINTS) h[coinId] = h[coinId].slice(-MAX_POINTS);
+    save(h);
+  }
+
+  // get trend: compares current to previous snapshot(s)
+  function trend(coinId, currentComposite) {
+    const h = load();
+    const hist = h[coinId] || [];
+    if (hist.length < 1) return { delta: 0, direction: 'new', prev: null, points: hist.length };
+    // use the most recent stored point that isn't the just-recorded one
+    const prev = hist.length >= 2 ? hist[hist.length - 2] : hist[hist.length - 1];
+    const delta = currentComposite - prev.c;
+    let direction = 'flat';
+    if (delta >= 5) direction = 'up';
+    else if (delta <= -5) direction = 'down';
+    return { delta, direction, prev: prev.c, points: hist.length };
+  }
+
+  function series(coinId) {
+    const h = load();
+    return (h[coinId] || []).map(p => p.c);
+  }
+
+  function clear() { save({}); }
+
+  return { record, trend, series, clear, load };
+})();
+
+// ── DECISION ENGINE (score + trend → action) ──
+const Decision = (() => {
+  // profiles tune how aggressive the thresholds are
+  const PROFILES = {
+    prudent: { buy: 78, add: 70, reduce: 42, sell: 32, trendWeight: 1.0 },
+    balanced: { buy: 72, add: 64, reduce: 45, sell: 36, trendWeight: 1.2 },
+    active: { buy: 66, add: 58, reduce: 48, sell: 40, trendWeight: 1.5 }
+  };
+
+  // verdict for a coin you OWN
+  function forHolding(signals, trendInfo, profile = 'active') {
+    const p = PROFILES[profile] || PROFILES.active;
+    const score = signals.composite;
+    const dir = trendInfo.direction;
+    const delta = trendInfo.delta;
+    const whale = signals.whale.score;
+    const hype = signals.hype?.score || 0;
+    const pump = signals.hype?.pumpRisk;
+
+    // effective score nudged by trend (active profile reacts more to movement)
+    const eff = score + (delta * (p.trendWeight - 1) * 0.4);
+
+    let action, cls, reason;
+
+    // SELL conditions (priority order)
+    if (score <= p.sell || (dir === 'down' && delta <= -15)) {
+      action = 'VENDI'; cls = 'v-sell';
+      reason = score <= p.sell ? `Score crollato a ${score}` : `Score in caduta (${delta > 0 ? '+' : ''}${delta})`;
+    } else if (pump && dir === 'down') {
+      action = 'VENDI'; cls = 'v-sell';
+      reason = 'Pattern pump in esaurimento';
+    } else if (eff <= p.reduce || (dir === 'down' && delta <= -8)) {
+      action = 'ALLEGGERISCI'; cls = 'v-reduce';
+      reason = dir === 'down' ? `Momentum negativo (${delta})` : `Segnali in calo (${score})`;
+    } else if (score >= p.buy && dir === 'up') {
+      action = 'AUMENTA'; cls = 'v-add';
+      reason = `Forte e in salita (+${delta})`;
+    } else if (score >= p.add && dir !== 'down') {
+      action = 'TIENI'; cls = 'v-hold';
+      reason = dir === 'up' ? `Solido, trend positivo` : `Stabile (${score})`;
+    } else {
+      action = 'TIENI'; cls = 'v-hold';
+      reason = `Nessun segnale forte`;
+    }
+
+    // pump warning overlay
+    if (pump && action !== 'VENDI') reason += ' ⚠ possibile pump';
+
+    return { action, cls, reason, score, eff: Math.round(eff) };
+  }
+
+  // verdict for a coin you DON'T own (opportunity)
+  function forOpportunity(signals, trendInfo, profile = 'active') {
+    const p = PROFILES[profile] || PROFILES.active;
+    const score = signals.composite;
+    const dir = trendInfo.direction;
+    const delta = trendInfo.delta;
+    const pump = signals.hype?.pumpRisk;
+
+    if (pump) return { action: 'EVITA', cls: 'v-sell', reason: 'Rischio pump & dump', score };
+    if (score >= p.buy && dir === 'up') return { action: 'COMPRA', cls: 'v-buy', reason: `Forte e in salita (+${delta})`, score };
+    if (score >= p.buy) return { action: 'COMPRA', cls: 'v-buy', reason: `Segnali forti (${score})`, score };
+    if (score >= p.add && dir === 'up') return { action: 'OSSERVA', cls: 'v-add', reason: `Promettente, in salita`, score };
+    return { action: 'IGNORA', cls: 'v-hold', reason: `Segnali deboli (${score})`, score };
+  }
+
+  function marketClimate(fearGreed, btcDom) {
+    let phase = '—', climate = '—', climateCls = 'trend-flat';
+    if (fearGreed) {
+      const v = fearGreed.value;
+      if (v < 25) { climate = 'Paura estrema'; climateCls = 'trend-down'; }
+      else if (v < 45) { climate = 'Cautela'; climateCls = 'trend-down'; }
+      else if (v < 55) { climate = 'Neutrale'; climateCls = 'trend-flat'; }
+      else if (v < 75) { climate = 'Ottimismo'; climateCls = 'trend-up'; }
+      else { climate = 'Euforia'; climateCls = 'trend-up'; }
+    }
+    if (btcDom != null) {
+      if (btcDom > 55) phase = 'BTC season';
+      else if (btcDom > 48) phase = 'Transizione';
+      else if (btcDom > 42) phase = 'Alt season early';
+      else phase = 'Alt season';
+    }
+    return { phase, climate, climateCls };
+  }
+
+  return { forHolding, forOpportunity, marketClimate, PROFILES };
+})();
+
 
 // ── APP ──
 const App = (() => {
@@ -1692,6 +1996,8 @@ const App = (() => {
     globalData: null,
     weights: { dev: 20, whale: 20, tokenomics: 15, catalyst: 10, rotation: 15, hype: 20 },
     fearGreed: null,
+    positions: [],
+    profile: 'active',
     autoRefreshInterval: 0,
     autoRefreshTimer: null,
     charts: {},
@@ -1705,12 +2011,14 @@ const App = (() => {
       const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
       if (s.watchlist?.length) state.watchlist = s.watchlist;
       if (s.weights) state.weights = { ...state.weights, ...s.weights };
+      if (s.positions) state.positions = s.positions;
+      if (s.profile) state.profile = s.profile;
     } catch {}
   }
 
   function persistState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ watchlist: state.watchlist, weights: state.weights }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ watchlist: state.watchlist, weights: state.weights, positions: state.positions, profile: state.profile }));
     } catch {}
   }
 
@@ -1766,6 +2074,8 @@ const App = (() => {
     const tab = document.querySelector(`.nav-tab[data-page="${name}"]`);
     if (tab) tab.classList.add('active');
     state.currentPage = name;
+    if (name === 'today') renderToday();
+    if (name === 'positions') renderPositions();
     if (name === 'portfolio') renderPortfolio();
     if (name === 'alerts') renderAlertLog();
     if (name === 'settings') renderSettings();
@@ -1799,6 +2109,7 @@ const App = (() => {
             rank: data.market_cap_rank || 999,
             signals: Signals.computeAll(data, state.globalData, state.weights, state.fearGreed)
           });
+          History.record(id, results[results.length - 1].signals);
         } catch (e) {
           console.warn('Skip', id, e.message);
         }
@@ -2246,11 +2557,23 @@ const App = (() => {
 
     const intervalSel = document.getElementById('auto-refresh');
     if (intervalSel) intervalSel.value = state.autoRefreshInterval;
+
+    document.querySelectorAll('#profile-toggle .sig-btn').forEach(b => {
+      b.classList.toggle('on', b.dataset.profile === state.profile);
+    });
   }
 
   function updateWeight(key, val) {
     state.weights[key] = val;
     persistState();
+  }
+
+  function setProfile(btn) {
+    document.querySelectorAll('#profile-toggle .sig-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.profile = btn.dataset.profile;
+    persistState();
+    renderToday();
   }
 
   function addCoin() {
@@ -2381,6 +2704,246 @@ const App = (() => {
 
     renderScanner();
     renderSettings();
+    renderPositions();
+    renderToday();
+  }
+
+  // ── today / positions / decisions ──────────────────────────────────────
+  function addPosition() {
+    const coin = document.getElementById('pos-coin')?.value?.trim().toLowerCase().replace(/\s+/g, '-');
+    const qty = parseFloat(document.getElementById('pos-qty')?.value);
+    const cost = parseFloat(document.getElementById('pos-cost')?.value);
+    const msg = document.getElementById('pos-add-msg');
+    if (!coin || !qty || qty <= 0) {
+      if (msg) { msg.style.color = 'var(--coral)'; msg.textContent = 'Inserisci almeno cripto e quantità valide.'; }
+      return;
+    }
+    const existing = state.positions.find(p => p.id === coin);
+    if (existing) {
+      // average in
+      const totalQty = existing.qty + qty;
+      existing.cost = cost ? ((existing.cost * existing.qty) + (cost * qty)) / totalQty : existing.cost;
+      existing.qty = totalQty;
+    } else {
+      state.positions.push({ id: coin, qty, cost: cost || 0 });
+      if (!state.watchlist.includes(coin)) state.watchlist.push(coin);
+    }
+    persistState();
+    document.getElementById('pos-coin').value = '';
+    document.getElementById('pos-qty').value = '';
+    document.getElementById('pos-cost').value = '';
+    if (msg) { msg.style.color = 'var(--teal)'; msg.textContent = `${coin} aggiunto. Vai su "Oggi" e premi Aggiorna segnali.`; }
+    renderPositions();
+  }
+
+  function removePosition(id) {
+    state.positions = state.positions.filter(p => p.id !== id);
+    persistState();
+    renderPositions();
+    renderToday();
+  }
+
+  function renderPositions() {
+    const el = document.getElementById('positions-list');
+    if (!el) return;
+    if (!state.positions.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);padding:8px 0">Nessuna posizione inserita.</div>';
+      return;
+    }
+    el.innerHTML = state.positions.map((pos, i) => {
+      const data = state.scannerData.find(d => d.id === pos.id);
+      const price = data?.price || 0;
+      const value = price * pos.qty;
+      const investedAt = pos.cost * pos.qty;
+      const pnl = pos.cost > 0 ? value - investedAt : 0;
+      const pnlPct = pos.cost > 0 ? ((price - pos.cost) / pos.cost) * 100 : 0;
+      const color = PALETTE[i % PALETTE.length];
+      return `
+      <div class="pos-row">
+        <div class="coin-avatar" style="background:${color}1f;color:${color};width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(data?.symbol || pos.id.slice(0,3)).toUpperCase().slice(0,3)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--font-display);font-size:13.5px;font-weight:600">${data?.name || pos.id}</div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">
+            <span class="num">${pos.qty}</span> unità ${pos.cost > 0 ? `· carico <span class="num">${fmtEur(pos.cost)}</span>` : '· nessun prezzo di carico'}
+          </div>
+        </div>
+        <div style="text-align:right">
+          ${price > 0 ? `<div class="num" style="font-size:13.5px;font-weight:600">${fmtEur(value)}</div>` : '<div style="font-size:12px;color:var(--text-muted)">—</div>'}
+          ${pos.cost > 0 && price > 0 ? `<div class="num" style="font-size:11.5px;color:${pnl >= 0 ? 'var(--teal)' : 'var(--coral)'}">${pnl >= 0 ? '+' : ''}${fmtEur(pnl)} (${fmtPct(pnlPct)})</div>` : ''}
+        </div>
+        <button class="btn-danger" onclick="App.removePosition('${pos.id}')" aria-label="Rimuovi" style="padding:7px">${svg('trash')}</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function refreshToday() {
+    const btn = document.getElementById('btn-today-refresh');
+    if (btn) { btn.disabled = true; btn.innerHTML = svg('refresh') + ' Analisi...'; }
+    const statusEl = document.getElementById('today-status');
+    if (statusEl) { statusEl.style.display = 'flex'; statusEl.className = 'status-bar loading'; statusEl.innerHTML = '<div class="spinner"></div> Analisi del portafoglio e del mercato...'; }
+
+    try {
+      // ensure all owned coins + watchlist are scanned
+      const need = [...new Set([...state.positions.map(p => p.id), ...state.watchlist])];
+      state.globalData = await API.getGlobal();
+      state.fearGreed = await API.getFearGreed();
+
+      const results = [];
+      for (let i = 0; i < need.length; i++) {
+        const id = need[i];
+        if (statusEl) statusEl.innerHTML = `<div class="spinner"></div> ${id} (${i + 1}/${need.length})...`;
+        try {
+          if (i > 0) await sleep(750);
+          const data = await API.getCoinDetail(id);
+          const md = data.market_data || {};
+          const sig = Signals.computeAll(data, state.globalData, state.weights, state.fearGreed);
+          results.push({
+            id, name: data.name, symbol: (data.symbol || '').toUpperCase(),
+            price: md.current_price?.eur || 0,
+            change24h: md.price_change_percentage_24h || 0,
+            change7d: md.price_change_percentage_7d || 0,
+            mcap: md.market_cap?.eur || 0, rank: data.market_cap_rank || 999,
+            signals: sig
+          });
+          History.record(id, sig);
+        } catch (e) { /* skip */ }
+      }
+      state.scannerData = results;
+
+      if (statusEl) statusEl.style.display = 'none';
+      renderToday();
+      renderPositions();
+      document.getElementById('last-update-label').textContent = 'Aggiornato: ' + new Date().toLocaleTimeString('it-IT');
+    } catch (e) {
+      if (statusEl) { statusEl.className = 'status-bar error'; statusEl.textContent = 'Errore: ' + e.message; }
+    }
+    if (btn) { btn.disabled = false; btn.innerHTML = svg('refresh') + ' Aggiorna segnali'; }
+  }
+
+  function trendArrow(dir, delta) {
+    if (dir === 'up') return `<span class="score-trend trend-up">▲ +${delta}</span>`;
+    if (dir === 'down') return `<span class="score-trend trend-down">▼ ${delta}</span>`;
+    if (dir === 'new') return `<span class="score-trend trend-flat">• nuovo</span>`;
+    return `<span class="score-trend trend-flat">— ${delta >= 0 ? '+' : ''}${delta}</span>`;
+  }
+
+  function renderToday() {
+    // market pulse
+    const btcDom = state.globalData?.market_cap_percentage?.btc;
+    const climate = Decision.marketClimate(state.fearGreed, btcDom);
+    const marketEl = document.getElementById('today-market');
+    if (marketEl) {
+      marketEl.innerHTML = `
+        <div class="metric"><div class="metric-label">Fear &amp; Greed</div><div class="metric-value" style="color:${fngColor(state.fearGreed?.value)}">${state.fearGreed ? state.fearGreed.value : '—'}</div><div class="metric-sub">${state.fearGreed ? fngLabel(state.fearGreed.classification) : '—'}</div></div>
+        <div class="metric"><div class="metric-label">BTC dominance</div><div class="metric-value num">${btcDom ? btcDom.toFixed(1) + '%' : '—'}</div></div>
+        <div class="metric"><div class="metric-label">Fase ciclo</div><div class="metric-value" style="font-size:15px">${climate.phase}</div></div>
+        <div class="metric"><div class="metric-label">Clima</div><div class="metric-value ${climate.climateCls}" style="font-size:15px">${climate.climate}</div></div>
+      `;
+    }
+
+    // banner summary
+    const banner = document.getElementById('today-banner-title');
+    const bannerSub = document.getElementById('today-banner-sub');
+    const bannerIcon = document.getElementById('today-banner-icon');
+
+    // portfolio verdicts
+    const verdictsEl = document.getElementById('today-verdicts');
+    if (state.positions.length && state.scannerData.length) {
+      const verdicts = state.positions.map(pos => {
+        const data = state.scannerData.find(d => d.id === pos.id);
+        if (!data?.signals) return null;
+        const tr = History.trend(pos.id, data.signals.composite);
+        const v = Decision.forHolding(data.signals, tr, state.profile);
+        const value = (data.price || 0) * pos.qty;
+        const pnlPct = pos.cost > 0 ? ((data.price - pos.cost) / pos.cost) * 100 : null;
+        return { pos, data, tr, v, value, pnlPct };
+      }).filter(Boolean);
+
+      // sort: actions needing attention first (sell/reduce/buy before hold)
+      const priority = { 'VENDI': 0, 'ALLEGGERISCI': 1, 'AUMENTA': 2, 'TIENI': 3 };
+      verdicts.sort((a, b) => (priority[a.v.action] ?? 9) - (priority[b.v.action] ?? 9));
+
+      const actionable = verdicts.filter(x => x.v.action !== 'TIENI').length;
+
+      if (banner) banner.textContent = actionable > 0 ? `${actionable} ${actionable === 1 ? 'azione consigliata' : 'azioni consigliate'} oggi` : 'Portafoglio stabile';
+      if (bannerSub) bannerSub.textContent = actionable > 0 ? 'Controlla i suggerimenti qui sotto.' : 'Nessun movimento urgente sui tuoi asset.';
+      if (bannerIcon) bannerIcon.style.background = actionable > 0 ? 'var(--amber-dim)' : 'var(--teal-dim)';
+
+      verdictsEl.innerHTML = verdicts.map((x, i) => {
+        const color = PALETTE[i % PALETTE.length];
+        return `
+        <div class="verdict-row">
+          <div class="verdict-coin">
+            <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${x.data.symbol.slice(0,3)}</div>
+            <div class="verdict-info">
+              <div class="verdict-name">${x.data.name}</div>
+              <div class="verdict-meta">
+                <span>Score <strong class="${scoreClass(x.data.signals.composite)}">${x.data.signals.composite}</strong></span>
+                ${trendArrow(x.tr.direction, x.tr.delta)}
+                ${x.pnlPct != null ? `<span class="num" style="color:${x.pnlPct >= 0 ? 'var(--teal)' : 'var(--coral)'}">${fmtPct(x.pnlPct)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="verdict-action">
+            <span class="verdict-badge ${x.v.cls}">${x.v.action}</span>
+            <span class="verdict-reason">${x.v.reason}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } else if (state.positions.length && !state.scannerData.length) {
+      if (banner) banner.textContent = 'Premi "Aggiorna segnali"';
+      if (bannerSub) bannerSub.textContent = 'Hai posizioni inserite ma i segnali non sono ancora caricati.';
+      verdictsEl.innerHTML = `<div class="empty-state"><p>Premi <strong>Aggiorna segnali</strong> per analizzare le tue ${state.positions.length} posizioni.</p></div>`;
+    } else {
+      verdictsEl.innerHTML = `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
+          <p>Non hai ancora inserito le tue posizioni.<br>Aggiungile per ricevere indicazioni operative.</p>
+          <button class="btn-primary" onclick="App.showPage('positions')">Aggiungi posizioni</button>
+        </div>`;
+    }
+
+    // opportunities (watchlist coins NOT owned, with strong signals)
+    const owned = new Set(state.positions.map(p => p.id));
+    const opps = state.scannerData
+      .filter(d => !owned.has(d.id) && d.signals)
+      .map(d => {
+        const tr = History.trend(d.id, d.signals.composite);
+        const v = Decision.forOpportunity(d.signals, tr, state.profile);
+        return { d, tr, v };
+      })
+      .filter(x => x.v.action === 'COMPRA' || x.v.action === 'OSSERVA')
+      .sort((a, b) => b.d.signals.composite - a.d.signals.composite)
+      .slice(0, 5);
+
+    const oppsCard = document.getElementById('today-opps-card');
+    const oppsEl = document.getElementById('today-opps');
+    if (opps.length) {
+      oppsCard.style.display = 'block';
+      oppsEl.innerHTML = opps.map((x, i) => {
+        const color = PALETTE[i % PALETTE.length];
+        return `
+        <div class="verdict-row">
+          <div class="verdict-coin">
+            <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${x.d.symbol.slice(0,3)}</div>
+            <div class="verdict-info">
+              <div class="verdict-name">${x.d.name}</div>
+              <div class="verdict-meta">
+                <span>Score <strong class="${scoreClass(x.d.signals.composite)}">${x.d.signals.composite}</strong></span>
+                ${trendArrow(x.tr.direction, x.tr.delta)}
+                <span class="num">${x.d.price ? fmtEur(x.d.price) : ''}</span>
+              </div>
+            </div>
+          </div>
+          <div class="verdict-action">
+            <span class="verdict-badge ${x.v.cls}">${x.v.action}</span>
+            <span class="verdict-reason">${x.v.reason}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      oppsCard.style.display = 'none';
+    }
   }
 
   // ── discovery ──────────────────────────────────────────────────────────
@@ -2658,7 +3221,8 @@ const App = (() => {
     addCoin, removeCoin, updateWeight,
     openBacktestFor, addToWatchlist, toggleBtSig,
     setDiscoSource, selectCategory, runDiscovery,
-    toggleDiscoDetail, addDiscoCoin
+    toggleDiscoDetail, addDiscoCoin,
+    refreshToday, addPosition, removePosition, renderPositions, setProfile
   };
 })();
 
