@@ -321,7 +321,7 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 }
 .score-ring .ring-cap { font-size: 7.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
 
-.signal-mini-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 13px; }
+.signal-mini-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin-top: 13px; }
 .signal-mini {
   background: var(--bg-elev);
   border: 1px solid transparent;
@@ -532,6 +532,7 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
   .nav-tab { padding: 11px 11px; font-size: 12px; }
   .nav-tab svg { width: 14px; height: 14px; }
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .signal-mini-grid { grid-template-columns: repeat(3, 1fr); }
   .compare-stats { gap: 7px; }
   .compare-stat { min-width: 44px; }
   .ctrl-row label { min-width: 118px; }
@@ -622,6 +623,7 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
             <option value="tokenomics">Tokenomics</option>
             <option value="catalyst">Catalyst</option>
             <option value="rotation">Rotazione</option>
+            <option value="hype">Hype score</option>
           </select>
           <select id="filter-score" aria-label="Score minimo">
             <option value="0">Score minimo: tutti</option>
@@ -1081,7 +1083,22 @@ const API = (() => {
     return get('/coins/markets', { vs_currency: 'eur', category: categoryId, order: 'market_cap_desc', per_page: perPage, page: 1, sparkline: false, price_change_percentage: '24h,7d' });
   }
 
-  return { getCoinDetail, getMarketChart, getOHLC, getGlobal, getMarketsPage, clearCache, getTrending, getMarketsBulk, getCategoriesList, getMarketsByCategory };
+  let _fngCache = null;
+  async function getFearGreed() {
+    if (_fngCache && Date.now() - _fngCache.ts < 30 * 60 * 1000) return _fngCache.data;
+    try {
+      const r = await fetch('https://api.alternative.me/fng/?limit=2');
+      if (!r.ok) return null;
+      const d = await r.json();
+      const val = parseInt(d.data?.[0]?.value || 50);
+      const prev = parseInt(d.data?.[1]?.value || val);
+      const result = { value: val, prev, classification: d.data?.[0]?.value_classification || 'Neutral', delta: val - prev };
+      _fngCache = { data: result, ts: Date.now() };
+      return result;
+    } catch (e) { return null; }
+  }
+
+  return { getCoinDetail, getMarketChart, getOHLC, getGlobal, getMarketsPage, clearCache, getTrending, getMarketsBulk, getCategoriesList, getMarketsByCategory, getFearGreed };
 })();
 
 
@@ -1213,19 +1230,105 @@ const Signals = (() => {
   }
 
   // --- composite ---
-  function computeAll(coinData, globalData, weights = { dev: 20, whale: 20, tokenomics: 20, catalyst: 20, rotation: 20 }) {
+  // --- signal 6: hype score (social attention + sentiment) ---
+  function hypeScore(coinData, fearGreed) {
+    const comm = coinData.community_data || {};
+    const dev = coinData.developer_data || {};
+    const md = coinData.market_data || {};
+    let score = 0;
+    const parts = [];
+    const reasons = [];
+
+    // Component 1: community size (Twitter + Telegram + Reddit) — 30%
+    const twitter = comm.twitter_followers || 0;
+    const telegram = comm.telegram_channel_user_count || 0;
+    const reddit = comm.reddit_subscribers || 0;
+    const redditActive = comm.reddit_accounts_active_48h || 0;
+    let commSize = 0;
+    commSize += Math.min(40, twitter / 5000);
+    commSize += Math.min(30, telegram / 2000);
+    commSize += Math.min(30, reddit / 3000);
+    parts.push(['comm', Math.min(100, commSize), 0.30]);
+    if (twitter > 50000) reasons.push(`${(twitter/1000).toFixed(0)}K follower X`);
+    if (telegram > 10000) reasons.push(`${(telegram/1000).toFixed(0)}K Telegram`);
+
+    // Component 2: Reddit active engagement ratio — 25%
+    let engagement = 50;
+    if (reddit > 0 && redditActive > 0) {
+      const activeRatio = redditActive / reddit;
+      if (activeRatio > 0.05) engagement = 90;
+      else if (activeRatio > 0.02) engagement = 75;
+      else if (activeRatio > 0.01) engagement = 60;
+      else engagement = 40;
+      const posts48 = comm.reddit_average_posts_48h || 0;
+      if (posts48 > 5) engagement = Math.min(100, engagement + 10);
+    }
+    parts.push(['engagement', engagement, 0.25]);
+    if (redditActive > 100) reasons.push(`${redditActive} attivi Reddit/48h`);
+
+    // Component 3: dev acceleration — 20%
+    const commits = dev.commit_count_4_weeks || 0;
+    let devAccel = 40;
+    if (commits > 60) devAccel = 95;
+    else if (commits > 30) devAccel = 80;
+    else if (commits > 15) devAccel = 65;
+    else if (commits > 5) devAccel = 50;
+    else if (commits > 0) devAccel = 35;
+    else devAccel = 15;
+    parts.push(['devaccel', devAccel, 0.20]);
+
+    // Component 4: sentiment votes + price momentum confirmation — 15%
+    const sentiment = coinData.sentiment_votes_up_percentage || 50;
+    const p7d = md.price_change_percentage_7d || 0;
+    let sentScore = sentiment;
+    // confirm with price: hype + rising price is more trustworthy than hype alone
+    if (sentiment > 65 && p7d > 5) sentScore = Math.min(100, sentiment + 15);
+    else if (sentiment > 65 && p7d < -5) sentScore = sentiment - 20; // hype but price falling = suspicious
+    parts.push(['sentiment', Math.max(0, Math.min(100, sentScore)), 0.15]);
+    if (sentiment > 70) reasons.push(`Sentiment ${sentiment.toFixed(0)}%`);
+
+    // Component 5: market Fear & Greed context — 10%
+    let fngScore = 50;
+    if (fearGreed) {
+      // In extreme fear, hype on a specific coin stands out more (contrarian opportunity)
+      // In extreme greed, everything is hyped so individual hype means less
+      const fng = fearGreed.value;
+      if (fng < 25) fngScore = 70;       // extreme fear: selective hype is meaningful
+      else if (fng < 45) fngScore = 60;
+      else if (fng < 55) fngScore = 50;
+      else if (fng < 75) fngScore = 45;
+      else fngScore = 35;                // extreme greed: hype is everywhere, less signal
+      if (fearGreed.delta > 5) fngScore += 5; // sentiment improving
+    }
+    parts.push(['fng', fngScore, 0.10]);
+
+    score = parts.reduce((s, [, val, w]) => s + val * w, 0);
+
+    // pump risk flag: high hype + flat dev + low circulating supply = suspicious
+    const circ = md.circulating_supply || 0;
+    const total = md.total_supply || circ;
+    const supplyRatio = total > 0 ? circ / total : 1;
+    const pumpRisk = (score >= 60 && commits < 5 && supplyRatio < 0.5);
+    if (pumpRisk) reasons.push('⚠ possibile pump');
+
+    return { score: Math.round(Math.max(0, Math.min(100, score))), reasons, pumpRisk, breakdown: parts };
+  }
+
+  function computeAll(coinData, globalData, weights = { dev: 20, whale: 20, tokenomics: 20, catalyst: 20, rotation: 20 }, fearGreed = null) {
     const dev = devActivity(coinData);
     const whale = whaleFlow(coinData);
     const tok = tokenomics(coinData);
     const cat = catalyst(coinData);
     const rot = sectorRotation(coinData, globalData);
-    const tw = weights.dev + weights.whale + weights.tokenomics + weights.catalyst + weights.rotation;
+    const hype = hypeScore(coinData, fearGreed);
+    const w = { dev: 20, whale: 20, tokenomics: 20, catalyst: 20, rotation: 20, hype: 0, ...weights };
+    const tw = w.dev + w.whale + w.tokenomics + w.catalyst + w.rotation + (w.hype || 0);
     const composite = Math.round(
-      (dev.score * weights.dev + whale.score * weights.whale +
-       tok.score * weights.tokenomics + cat.score * weights.catalyst +
-       rot.score * weights.rotation) / tw
+      (dev.score * w.dev + whale.score * w.whale +
+       tok.score * w.tokenomics + cat.score * w.catalyst +
+       rot.score * w.rotation + hype.score * (w.hype || 0)) / tw
     );
-    return { dev, whale, tokenomics: tok, catalyst: cat, rotation: rot, composite };
+    return { dev, whale, tokenomics: tok, catalyst: cat, rotation: rot, hype, composite };
   }
 
   // --- backtesting signal (price-series based) ---
@@ -1294,7 +1397,7 @@ const Signals = (() => {
     return count > 0 ? Math.round(total / count) : 50;
   }
 
-  return { computeAll, scoreFromPrices, ma };
+  return { computeAll, scoreFromPrices, ma, hypeScore };
 })();
 
 
@@ -1587,7 +1690,8 @@ const App = (() => {
     watchlist: [...DEFAULT_WATCHLIST],
     scannerData: [],
     globalData: null,
-    weights: { dev: 20, whale: 20, tokenomics: 20, catalyst: 20, rotation: 20 },
+    weights: { dev: 20, whale: 20, tokenomics: 15, catalyst: 10, rotation: 15, hype: 20 },
+    fearGreed: null,
     autoRefreshInterval: 0,
     autoRefreshTimer: null,
     charts: {},
@@ -1611,6 +1715,19 @@ const App = (() => {
   }
 
   // ── utils ──────────────────────────────────────────────────────────────
+  function fngColor(v) {
+    if (v == null) return 'var(--text-muted)';
+    if (v < 25) return 'var(--coral)';
+    if (v < 45) return 'var(--amber)';
+    if (v < 55) return 'var(--text-secondary)';
+    if (v < 75) return 'var(--teal)';
+    return 'var(--teal)';
+  }
+  function fngLabel(c) {
+    const m = { 'Extreme Fear': 'Paura estrema', 'Fear': 'Paura', 'Neutral': 'Neutrale', 'Greed': 'Avidità', 'Extreme Greed': 'Avidità estrema' };
+    return m[c] || c;
+  }
+
   function scoreColor(s) {
     if (s >= 72) return 'var(--teal)';
     if (s >= 50) return 'var(--amber)';
@@ -1662,6 +1779,7 @@ const App = (() => {
 
     try {
       state.globalData = await API.getGlobal();
+      state.fearGreed = await API.getFearGreed();
       const results = [];
       for (let i = 0; i < state.watchlist.length; i++) {
         const id = state.watchlist[i];
@@ -1679,7 +1797,7 @@ const App = (() => {
             change7d: md.price_change_percentage_7d || 0,
             mcap: md.market_cap?.eur || 0,
             rank: data.market_cap_rank || 999,
-            signals: Signals.computeAll(data, state.globalData, state.weights)
+            signals: Signals.computeAll(data, state.globalData, state.weights, state.fearGreed)
           });
         } catch (e) {
           console.warn('Skip', id, e.message);
@@ -1722,7 +1840,7 @@ const App = (() => {
         const top = Object.entries({
           dev: d.signals.dev.score, whale: d.signals.whale.score,
           tokenomics: d.signals.tokenomics.score, catalyst: d.signals.catalyst.score,
-          rotation: d.signals.rotation.score
+          rotation: d.signals.rotation.score, hype: d.signals.hype?.score || 0
         }).sort((a, b) => b[1] - a[1])[0][0];
         if (top !== filterSig) return false;
       }
@@ -1743,7 +1861,7 @@ const App = (() => {
       <div class="metric"><div class="metric-label">Asset monitorati</div><div class="metric-value">${state.watchlist.length}</div><div class="metric-sub">nella watchlist</div></div>
       <div class="metric"><div class="metric-label">Segnali forti</div><div class="metric-value score-high">${strong}</div><div class="metric-sub">score ≥ 72</div></div>
       <div class="metric"><div class="metric-label">Score medio</div><div class="metric-value">${avg || '—'}</div><div class="metric-sub">su 100</div></div>
-      <div class="metric"><div class="metric-label">BTC dominance</div><div class="metric-value">${state.globalData ? state.globalData.market_cap_percentage?.btc?.toFixed(1) + '%' : '—'}</div><div class="metric-sub">rotazione ref.</div></div>
+      <div class="metric"><div class="metric-label">Fear &amp; Greed</div><div class="metric-value" style="color:${fngColor(state.fearGreed?.value)}">${state.fearGreed ? state.fearGreed.value : '—'}</div><div class="metric-sub">${state.fearGreed ? fngLabel(state.fearGreed.classification) : 'mercato'}</div></div>
     `;
 
     const list = document.getElementById('scanner-list');
@@ -1756,9 +1874,9 @@ const App = (() => {
       const sig = d.signals;
       const changeBadge = d.change24h >= 0 ? 'badge-green' : 'badge-red';
       const color = PALETTE[i % PALETTE.length];
-      const sigKeys = ['dev', 'whale', 'tokenomics', 'catalyst', 'rotation'];
-      const sigLabels = { dev: 'Dev', whale: 'Whale', tokenomics: 'Supply', catalyst: 'Catalyst', rotation: 'Rotaz.' };
-      const sigIcons = { dev: 'code', whale: 'fish', tokenomics: 'flame', catalyst: 'rocket', rotation: 'arrows-exchange' };
+      const sigKeys = ['dev', 'whale', 'tokenomics', 'catalyst', 'rotation', 'hype'];
+      const sigLabels = { dev: 'Dev', whale: 'Whale', tokenomics: 'Supply', catalyst: 'Catalyst', rotation: 'Rotaz.', hype: 'Hype' };
+      const sigIcons = { dev: 'code', whale: 'fish', tokenomics: 'flame', catalyst: 'rocket', rotation: 'arrows-exchange', hype: 'hype' };
 
       return `
       <div class="coin-card" id="card-${d.id}">
@@ -1771,6 +1889,7 @@ const App = (() => {
               <span class="price">${d.price ? fmtEur(d.price) : '—'}</span>
               <span class="badge ${changeBadge}">${fmtPct(d.change24h)}</span>
               ${d.rank < 200 ? `<span class="badge badge-blue">#${d.rank}</span>` : ''}
+              ${sig.hype?.pumpRisk ? `<span class="badge badge-red">⚠ pump?</span>` : ''}
             </div>
           </div>
           ${scoreRing(sig.composite)}
@@ -2115,7 +2234,7 @@ const App = (() => {
 
     const wc = document.getElementById('weights-config');
     if (wc) {
-      const labels = { dev: 'Dev activity', whale: 'Whale flow', tokenomics: 'Tokenomics', catalyst: 'Catalyst', rotation: 'Rotazione settore' };
+      const labels = { dev: 'Dev activity', whale: 'Whale flow', tokenomics: 'Tokenomics', catalyst: 'Catalyst', rotation: 'Rotazione settore', hype: 'Hype score (social)' };
       wc.innerHTML = Object.entries(state.weights).map(([k, v]) => `
         <div class="ctrl-row">
           <label>${labels[k]}</label>
@@ -2197,7 +2316,8 @@ const App = (() => {
     rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"></path>',
     'arrows-exchange': '<polyline points="7 16 3 12 7 8"></polyline><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="17 8 21 12 17 16"></polyline>',
     radar: '<circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path>',
-    wallet: '<path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path>'
+    wallet: '<path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path>',
+    hype: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline>'
   };
 
   function svg(name, size = 14) {
@@ -2399,6 +2519,7 @@ const App = (() => {
 
       // Deep scan: fetch detail for each coin and compute signals
       if (!state.globalData) state.globalData = await API.getGlobal();
+      if (!state.fearGreed) state.fearGreed = await API.getFearGreed();
       const scanned = [];
 
       for (let i = 0; i < filtered.length; i++) {
@@ -2408,7 +2529,7 @@ const App = (() => {
         try {
           if (i > 0) await sleep(700);
           const detail = await API.getCoinDetail(c.id);
-          const signals = Signals.computeAll(detail, state.globalData, state.weights);
+          const signals = Signals.computeAll(detail, state.globalData, state.weights, state.fearGreed);
           scanned.push({
             id: c.id,
             name: c.name || detail.name,
@@ -2473,8 +2594,8 @@ const App = (() => {
       const color = PALETTE[i % PALETTE.length];
       const changeBadge = d.change24h >= 0 ? 'badge-green' : 'badge-red';
       const inWatchlist = state.watchlist.includes(d.id);
-      const sigKeys = ['dev', 'whale', 'tokenomics', 'catalyst', 'rotation'];
-      const sigLabels = { dev: 'Dev', whale: 'Whale', tokenomics: 'Supply', catalyst: 'Cat.', rotation: 'Rot.' };
+      const sigKeys = ['dev', 'whale', 'tokenomics', 'catalyst', 'rotation', 'hype'];
+      const sigLabels = { dev: 'Dev', whale: 'Whale', tokenomics: 'Supply', catalyst: 'Cat.', rotation: 'Rot.', hype: 'Hype' };
 
       return `
       <div class="disco-result-card" onclick="App.toggleDiscoDetail('disco-d-${d.id}')">
@@ -2484,6 +2605,7 @@ const App = (() => {
             <span style="font-family:var(--font-display);font-size:14px;font-weight:600">${d.name}</span>
             <span class="tier-badge ${tier.cls}">${tier.text}</span>
             <span class="badge ${changeBadge}">${fmtPct(d.change24h)}</span>
+            ${sig.hype?.pumpRisk ? '<span class="badge badge-red">⚠ pump?</span>' : ''}
             ${inWatchlist ? '<span class="badge badge-amber">in watchlist</span>' : ''}
           </div>
           <div style="font-size:11.5px;color:var(--text-secondary);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">
@@ -2497,7 +2619,7 @@ const App = (() => {
             ${sigKeys.map(k => `<span style="font-size:10.5px"><span style="color:var(--text-muted)">${sigLabels[k]}</span> <span class="${scoreClass(sig[k].score)}" style="font-family:var(--font-mono);font-weight:700">${sig[k].score}</span></span>`).join('')}
           </div>
           <div id="disco-d-${d.id}" class="coin-detail" style="margin-top:10px;padding-top:10px">
-            ${sig.dev.reasons?.length ? `<div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:6px">${[...sig.dev.reasons, ...sig.whale.reasons, ...sig.tokenomics.reasons, ...sig.catalyst.reasons, ...sig.rotation.reasons].slice(0,5).join(' · ')}</div>` : ''}
+            ${sig.dev.reasons?.length || sig.hype.reasons?.length ? `<div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:6px">${[...sig.hype.reasons, ...sig.whale.reasons, ...sig.dev.reasons, ...sig.catalyst.reasons].slice(0,5).join(' · ')}</div>` : ''}
             <div style="display:flex;gap:7px;flex-wrap:wrap">
               ${!inWatchlist ? `<button onclick="event.stopPropagation();App.addDiscoCoin('${d.id}')" style="font-size:11px;padding:5px 10px">${svg('plus')} Aggiungi alla watchlist</button>` : ''}
               <button onclick="event.stopPropagation();App.openBacktestFor('${d.id}')" style="font-size:11px;padding:5px 10px">${svg('chart-line')} Backtesta</button>
