@@ -480,6 +480,91 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 
 /* ── Responsive ─────────────────────────────────────── */
 
+/* ── Onboarding ─────────────────────────────────────── */
+.onb-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 90% 60% at 50% 0%, rgba(240,180,41,0.10), transparent 70%);
+  display: none; flex-direction: column;
+  overflow-y: auto;
+}
+.onb-overlay.active { display: flex; }
+.onb-inner { max-width: 480px; width: 100%; margin: auto; padding: 2rem 1.5rem; }
+.onb-step { display: none; animation: fadeUp 0.4s ease; }
+.onb-step.active { display: block; }
+.onb-progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 2rem; }
+.onb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bg-hover); transition: all 0.3s; }
+.onb-dot.on { background: var(--amber); width: 22px; border-radius: 4px; }
+.onb-logo { width: 56px; height: 56px; border-radius: 16px; background: var(--amber-dim); border: 1px solid rgba(240,180,41,0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+.onb-logo svg { width: 28px; height: 28px; stroke: var(--amber); fill: none; }
+.onb-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; text-align: center; letter-spacing: -0.02em; margin-bottom: 0.75rem; line-height: 1.2; }
+.onb-text { font-size: 15px; color: var(--text-secondary); text-align: center; line-height: 1.6; margin-bottom: 1.75rem; }
+.onb-q { font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-bottom: 1rem; line-height: 1.35; }
+.onb-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+.onb-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 15px 16px; border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong); background: var(--bg-card);
+  cursor: pointer; transition: all 0.15s; text-align: left; width: 100%;
+  font-size: 14.5px; color: var(--text); font-family: var(--font-body);
+}
+.onb-opt:hover { border-color: var(--amber); background: var(--bg-hover); }
+.onb-opt.selected { border-color: var(--amber); background: var(--amber-dim); }
+.onb-opt-emoji { font-size: 22px; flex-shrink: 0; }
+.onb-opt-text { flex: 1; }
+.onb-opt-text strong { display: block; font-weight: 600; margin-bottom: 1px; }
+.onb-opt-text span { font-size: 12.5px; color: var(--text-secondary); }
+.onb-nav { display: flex; gap: 10px; justify-content: space-between; margin-top: 1rem; }
+.onb-skip { font-size: 13px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 8px; }
+.onb-skip:hover { color: var(--text-secondary); background: none; }
+.onb-disclaimer { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 1.5rem; padding: 12px; background: var(--bg-elev); border-radius: var(--radius-md); border: 1px solid var(--border); line-height: 1.5; }
+
+/* ── Human-language / mode ──────────────────────────── */
+.mode-switch { display: flex; align-items: center; gap: 7px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 20px; padding: 3px; }
+.mode-btn { font-size: 11.5px; padding: 4px 11px; border-radius: 16px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; transition: all 0.15s; }
+.mode-btn.on { background: var(--amber); color: #1A1402; }
+.mode-btn:hover:not(.on) { color: var(--text-secondary); background: transparent; }
+
+/* term that can be tapped for definition */
+.term { border-bottom: 1px dotted var(--text-muted); cursor: help; }
+.term:hover { color: var(--amber); border-bottom-color: var(--amber); }
+
+/* glossary popover */
+.glossary-pop {
+  position: fixed; z-index: 1100; max-width: 280px;
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); padding: 12px 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5); font-size: 13px; line-height: 1.5;
+  display: none;
+}
+.glossary-pop.show { display: block; animation: fadeUp 0.2s ease; }
+.glossary-pop strong { color: var(--amber); display: block; margin-bottom: 4px; font-family: var(--font-display); }
+
+/* risk guardrail banner */
+.guard-banner {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--coral-dim); border: 1px solid rgba(244,105,76,0.3);
+  border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 1rem;
+  font-size: 13px; color: var(--text);
+}
+.guard-banner svg { width: 18px; height: 18px; stroke: var(--coral); fill: none; flex-shrink: 0; margin-top: 1px; }
+
+/* simple-mode hides numbers, shows words */
+body.mode-simple .expert-only { display: none !important; }
+body.mode-expert .simple-only { display: none !important; }
+
+/* big friendly verdict for simple mode */
+.simple-verdict {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; border-radius: var(--radius-lg);
+  border: 1px solid var(--border); margin-bottom: 10px;
+}
+.simple-verdict-emoji { font-size: 32px; flex-shrink: 0; }
+.simple-verdict-body { flex: 1; min-width: 0; }
+.simple-verdict-coin { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+.simple-verdict-action { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.simple-verdict-why { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; line-height: 1.4; }
+
 /* ── Today / Verdicts ───────────────────────────────── */
 .today-banner {
   display: flex; align-items: center; gap: 14px;
@@ -593,6 +678,99 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 </head>
 <body>
 
+<!-- ── ONBOARDING OVERLAY ── -->
+<div id="onboarding" class="onb-overlay">
+  <div class="onb-inner">
+    <div class="onb-progress">
+      <div class="onb-dot on" data-d="0"></div>
+      <div class="onb-dot" data-d="1"></div>
+      <div class="onb-dot" data-d="2"></div>
+      <div class="onb-dot" data-d="3"></div>
+    </div>
+
+    <!-- Step 0: welcome -->
+    <div class="onb-step active" data-step="0">
+      <div class="onb-logo">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      </div>
+      <div class="onb-title">Ciao, benvenuto.</div>
+      <div class="onb-text">Questa app ti aiuta a capire <strong>quando muovere le tue crypto</strong>. Non è una sfera di cristallo: ti dà pareri ragionati basati su dati di mercato. Le decisioni restano sempre tue.</div>
+      <button class="btn-primary" style="width:100%;justify-content:center;padding:13px" onclick="App.onbNext()">Iniziamo →</button>
+      <div class="onb-disclaimer">⚠️ Il trading di criptovalute comporta rischi reali di perdita. Non investire mai più di quanto puoi permetterti di perdere.</div>
+    </div>
+
+    <!-- Step 1: experience -->
+    <div class="onb-step" data-step="1">
+      <div class="onb-q">Quanto conosci il mondo crypto?</div>
+      <div class="onb-options" id="onb-exp">
+        <button class="onb-opt" data-val="none" onclick="App.onbPick(this,'experience')">
+          <span class="onb-opt-emoji">🌱</span>
+          <span class="onb-opt-text"><strong>Sono all'inizio</strong><span>Non ho mai comprato crypto o quasi</span></span>
+        </button>
+        <button class="onb-opt" data-val="some" onclick="App.onbPick(this,'experience')">
+          <span class="onb-opt-emoji">🌿</span>
+          <span class="onb-opt-text"><strong>Ho comprato qualcosa</strong><span>Ho un po' di crypto ma non seguo molto</span></span>
+        </button>
+        <button class="onb-opt" data-val="confident" onclick="App.onbPick(this,'experience')">
+          <span class="onb-opt-emoji">🌳</span>
+          <span class="onb-opt-text"><strong>Ci capisco</strong><span>Seguo il mercato e so come funziona</span></span>
+        </button>
+      </div>
+      <div class="onb-nav">
+        <button class="onb-skip" onclick="App.onbSkip()">Salta tutto</button>
+        <button class="btn-primary" id="onb-next-1" disabled onclick="App.onbNext()">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: risk reaction -->
+    <div class="onb-step" data-step="2">
+      <div class="onb-q">Immagina: investi 1.000€ e in una settimana diventano 700€. Cosa fai?</div>
+      <div class="onb-text" style="text-align:left;margin-bottom:1rem;font-size:13.5px">Questa è la domanda più importante. La tua reazione vera a una perdita conta più di mille parole.</div>
+      <div class="onb-options" id="onb-risk">
+        <button class="onb-opt" data-val="panic" onclick="App.onbPick(this,'risk')">
+          <span class="onb-opt-emoji">😰</span>
+          <span class="onb-opt-text"><strong>Vendo subito</strong><span>Non sopporto di perdere altro</span></span>
+        </button>
+        <button class="onb-opt" data-val="wait" onclick="App.onbPick(this,'risk')">
+          <span class="onb-opt-emoji">😐</span>
+          <span class="onb-opt-text"><strong>Aspetto e vedo</strong><span>Magari risale, mantengo la calma</span></span>
+        </button>
+        <button class="onb-opt" data-val="buy" onclick="App.onbPick(this,'risk')">
+          <span class="onb-opt-emoji">😎</span>
+          <span class="onb-opt-text"><strong>Ne comprerei altre</strong><span>Prezzo più basso, buona occasione</span></span>
+        </button>
+      </div>
+      <div class="onb-nav">
+        <button class="onb-skip" onclick="App.onbSkip()">Salta tutto</button>
+        <button class="btn-primary" id="onb-next-2" disabled onclick="App.onbNext()">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: goal + finish -->
+    <div class="onb-step" data-step="3">
+      <div class="onb-q">Cosa cerchi soprattutto?</div>
+      <div class="onb-options" id="onb-goal">
+        <button class="onb-opt" data-val="manage" onclick="App.onbPick(this,'goal')">
+          <span class="onb-opt-emoji">💼</span>
+          <span class="onb-opt-text"><strong>Gestire quello che ho</strong><span>Capire quando vendere o tenere</span></span>
+        </button>
+        <button class="onb-opt" data-val="discover" onclick="App.onbPick(this,'goal')">
+          <span class="onb-opt-emoji">🔍</span>
+          <span class="onb-opt-text"><strong>Trovare nuove crypto</strong><span>Scoprire opportunità interessanti</span></span>
+        </button>
+        <button class="onb-opt" data-val="learn" onclick="App.onbPick(this,'goal')">
+          <span class="onb-opt-emoji">📚</span>
+          <span class="onb-opt-text"><strong>Imparare, per ora</strong><span>Capire come funziona senza fretta</span></span>
+        </button>
+      </div>
+      <div class="onb-nav">
+        <button class="onb-skip" onclick="App.onbSkip()">Salta tutto</button>
+        <button class="btn-primary" id="onb-next-3" disabled onclick="App.onbFinish()">Fatto! Entra →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div class="app-shell">
 
@@ -608,8 +786,12 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
       </div>
     </div>
     <div class="header-right">
-      <span class="last-update" id="last-update-label">Non aggiornato</span>
-      <button id="btn-refresh" class="btn-primary">
+      <div class="mode-switch" role="group" aria-label="Modalità">
+        <button class="mode-btn on" data-mode="simple" onclick="App.setMode('simple')">Semplice</button>
+        <button class="mode-btn" data-mode="expert" onclick="App.setMode('expert')">Esperto</button>
+      </div>
+      <span class="last-update expert-only" id="last-update-label">Non aggiornato</span>
+      <button id="btn-refresh" class="btn-primary expert-only">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
         Aggiorna
       </button>
@@ -622,11 +804,11 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
       <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
       Oggi
     </button>
-    <button class="nav-tab" data-page="scanner" role="tab">
+    <button class="nav-tab expert-only" data-page="scanner" role="tab">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"></path></svg>
       Scanner
     </button>
-    <button class="nav-tab" data-page="discovery" role="tab">
+    <button class="nav-tab expert-only" data-page="discovery" role="tab">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
       Discovery
     </button>
@@ -638,11 +820,11 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
       <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
       Alert
     </button>
-    <button class="nav-tab" data-page="backtest-config" role="tab">
+    <button class="nav-tab expert-only" data-page="backtest-config" role="tab">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
       Backtest
     </button>
-    <button class="nav-tab" data-page="backtest" role="tab">
+    <button class="nav-tab expert-only" data-page="backtest" role="tab">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
       Risultati
     </button>
@@ -669,6 +851,7 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
       </div>
 
       <div id="today-status" class="status-bar" style="display:none"></div>
+      <div id="today-demo-slot"></div>
 
       <!-- Market pulse -->
       <div class="card">
@@ -1167,13 +1350,8 @@ input[type="range"] { accent-color: var(--amber); cursor: pointer; height: 4px; 
 <!-- Alert toast -->
 <div id="toast" role="alert" aria-live="polite"></div>
 
-<style>
-  #multi-status { display: flex !important; }
-</style>
-
-
-<!-- Alert toast -->
-<div id="toast" role="alert" aria-live="polite"></div>
+<!-- Glossary popover -->
+<div id="glossary-pop" class="glossary-pop"></div>
 
 <style>
   #multi-status { display: flex !important; }
@@ -1998,12 +2176,16 @@ const App = (() => {
     fearGreed: null,
     positions: [],
     profile: 'active',
+    uiMode: 'simple',        // 'simple' | 'expert'
+    onboarded: false,
+    isDemo: false,
+    experience: null,        // 'none' | 'some' | 'confident'
     autoRefreshInterval: 0,
     autoRefreshTimer: null,
     charts: {},
     btActiveSigs: new Set(['momentum', 'volume', 'trend', 'reversal', 'volatility']),
     btResult: null,
-    currentPage: 'scanner'
+    currentPage: 'today'
   };
 
   function loadPersistedState() {
@@ -2013,12 +2195,20 @@ const App = (() => {
       if (s.weights) state.weights = { ...state.weights, ...s.weights };
       if (s.positions) state.positions = s.positions;
       if (s.profile) state.profile = s.profile;
+      if (s.uiMode) state.uiMode = s.uiMode;
+      if (s.onboarded) state.onboarded = s.onboarded;
+      if (s.isDemo) state.isDemo = s.isDemo;
+      if (s.experience) state.experience = s.experience;
     } catch {}
   }
 
   function persistState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ watchlist: state.watchlist, weights: state.weights, positions: state.positions, profile: state.profile }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        watchlist: state.watchlist, weights: state.weights, positions: state.positions,
+        profile: state.profile, uiMode: state.uiMode, onboarded: state.onboarded,
+        isDemo: state.isDemo, experience: state.experience
+      }));
     } catch {}
   }
 
@@ -2705,7 +2895,137 @@ const App = (() => {
     renderScanner();
     renderSettings();
     renderPositions();
+    applyMode();
     renderToday();
+
+    // first run → onboarding
+    if (!state.onboarded) {
+      document.getElementById('onboarding')?.classList.add('active');
+    }
+
+    // glossary: dismiss on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.term') && !e.target.closest('.glossary-pop')) {
+        document.getElementById('glossary-pop')?.classList.remove('show');
+      }
+    });
+  }
+
+  // ── onboarding ─────────────────────────────────────────────────────────
+  let onbStep = 0;
+  let onbAnswers = { experience: null, risk: null, goal: null };
+
+  function onbPick(btn, key) {
+    const parent = btn.closest('.onb-options');
+    parent.querySelectorAll('.onb-opt').forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+    onbAnswers[key] = btn.dataset.val;
+    // enable the step's next button
+    const nextBtn = document.getElementById('onb-next-' + onbStep);
+    if (nextBtn) nextBtn.disabled = false;
+  }
+
+  function onbNext() {
+    onbStep++;
+    document.querySelectorAll('.onb-step').forEach(s => s.classList.toggle('active', +s.dataset.step === onbStep));
+    document.querySelectorAll('.onb-dot').forEach(d => d.classList.toggle('on', +d.dataset.d <= onbStep));
+  }
+
+  function onbSkip() {
+    // skip → expert-ish defaults, no demo
+    state.onboarded = true;
+    state.uiMode = 'expert';
+    persistState();
+    document.getElementById('onboarding')?.classList.remove('active');
+    applyMode();
+    renderToday();
+  }
+
+  function onbFinish() {
+    // derive profile from risk reaction
+    const risk = onbAnswers.risk;
+    if (risk === 'panic') state.profile = 'prudent';
+    else if (risk === 'buy') state.profile = 'active';
+    else state.profile = 'balanced';
+
+    state.experience = onbAnswers.experience;
+
+    // derive UI mode from experience
+    state.uiMode = (onbAnswers.experience === 'confident') ? 'expert' : 'simple';
+
+    // if beginner with no positions → load demo portfolio
+    if (onbAnswers.experience !== 'confident' && state.positions.length === 0) {
+      state.isDemo = true;
+      state.positions = [
+        { id: 'bitcoin', qty: 0.05, cost: 50000 },
+        { id: 'ethereum', qty: 1, cost: 2800 },
+        { id: 'solana', qty: 15, cost: 130 }
+      ];
+      ['bitcoin', 'ethereum', 'solana'].forEach(id => { if (!state.watchlist.includes(id)) state.watchlist.push(id); });
+    }
+
+    state.onboarded = true;
+    persistState();
+    document.getElementById('onboarding')?.classList.remove('active');
+    applyMode();
+    renderPositions();
+    renderToday();
+    // auto-load signals so the Today screen is alive immediately
+    refreshToday();
+  }
+
+  // ── UI mode (simple / expert) ──────────────────────────────────────────
+  function setMode(mode) {
+    state.uiMode = mode;
+    persistState();
+    applyMode();
+    renderToday();
+  }
+
+  function applyMode() {
+    document.body.classList.toggle('mode-simple', state.uiMode === 'simple');
+    document.body.classList.toggle('mode-expert', state.uiMode === 'expert');
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('on', b.dataset.mode === state.uiMode));
+    // if currently on an expert-only page in simple mode, bounce to Today
+    if (state.uiMode === 'simple') {
+      const expertPages = ['scanner', 'discovery', 'backtest', 'backtest-config'];
+      if (expertPages.includes(state.currentPage)) showPage('today');
+    }
+  }
+
+  // ── glossary ───────────────────────────────────────────────────────────
+  const GLOSSARY = {
+    score: ['Punteggio segnali', 'Un voto da 0 a 100 che riassume quanto i nostri 6 indicatori sono favorevoli a questa crypto in questo momento. Più alto = segnali più positivi.'],
+    whale: ['Grandi investitori', 'Indica se grossi compratori ("balene") stanno accumulando questa crypto. Quando comprano in grande, spesso il prezzo segue.'],
+    hype: ['Attenzione social', 'Misura quanto se ne parla: community, sviluppo, sentiment. Un hype che cresce può precedere un movimento — ma può anche essere un campanello di pump.'],
+    stoploss: ['Stop loss', 'Un livello di prezzo che decidi in anticipo: se la crypto scende fin lì, vendi per limitare la perdita. È la cintura di sicurezza del trader.'],
+    pump: ['Pump & dump', 'Una manovra in cui un gruppo gonfia artificialmente il prezzo (pump) per poi vendere in massa (dump), lasciando gli altri con perdite. Da evitare.'],
+    feargreed: ['Paura e Avidità', "Un termometro dell'umore del mercato crypto. Paura estrema = tutti vendono spaventati (a volte buone occasioni). Avidità = euforia (spesso prezzi gonfiati)."],
+    dominance: ['Dominanza BTC', 'Quanta parte del mercato crypto è Bitcoin. Quando scende, spesso i soldi si spostano sulle altre crypto ("alt season").'],
+    composite: ['Punteggio segnali', 'Vedi "Punteggio segnali": è la sintesi di tutti gli indicatori.'],
+    microcap: ['Micro-cap', 'Crypto con capitalizzazione molto piccola. Possono esplodere ma anche azzerarsi: alto rischio, adatte solo a chi può perdere quei soldi.']
+  };
+
+  function showGlossary(term, ev) {
+    ev.stopPropagation();
+    const g = GLOSSARY[term];
+    const pop = document.getElementById('glossary-pop');
+    if (!g || !pop) return;
+    pop.innerHTML = `<strong>${g[0]}</strong>${g[1]}`;
+    pop.classList.add('show');
+    const r = ev.target.getBoundingClientRect();
+    let left = r.left;
+    let top = r.bottom + 8;
+    pop.style.left = '0px'; pop.style.top = '0px';
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+    if (top + ph > window.innerHeight - 12) top = r.top - ph - 8;
+    pop.style.left = Math.max(12, left) + 'px';
+    pop.style.top = Math.max(12, top) + 'px';
+  }
+
+  function term(label, key) {
+    return `<span class="term" onclick="App.showGlossary('${key}',event)">${label}</span>`;
   }
 
   // ── today / positions / decisions ──────────────────────────────────────
@@ -2827,27 +3147,70 @@ const App = (() => {
     return `<span class="score-trend trend-flat">— ${delta >= 0 ? '+' : ''}${delta}</span>`;
   }
 
+  // human-language mapping for actions
+  const ACTION_HUMAN = {
+    'VENDI': { emoji: '🔴', simple: 'Un trader qui venderebbe', color: 'var(--coral)' },
+    'ALLEGGERISCI': { emoji: '🟠', simple: 'Valuta di venderne una parte', color: 'var(--amber)' },
+    'TIENI': { emoji: '⚪', simple: 'Niente da fare, tutto regolare', color: 'var(--text-secondary)' },
+    'AUMENTA': { emoji: '🟢', simple: 'Momento favorevole, un trader aumenterebbe', color: 'var(--teal)' },
+    'COMPRA': { emoji: '🟢', simple: 'Segnali da acquisto', color: 'var(--teal)' },
+    'OSSERVA': { emoji: '🔵', simple: 'Da tenere d\'occhio', color: 'var(--blue)' },
+    'EVITA': { emoji: '⛔', simple: 'Meglio stare alla larga', color: 'var(--coral)' },
+    'IGNORA': { emoji: '⚪', simple: 'Segnali deboli, lascia perdere', color: 'var(--text-muted)' }
+  };
+
+  function humanScore(score) {
+    if (score >= 72) return 'Segnali forti';
+    if (score >= 55) return 'Segnali discreti';
+    if (score >= 45) return 'Segnali incerti';
+    return 'Segnali deboli';
+  }
+  function humanTrend(dir) {
+    if (dir === 'up') return 'in miglioramento';
+    if (dir === 'down') return 'in peggioramento';
+    if (dir === 'new') return 'prima analisi';
+    return 'stabile';
+  }
+
   function renderToday() {
-    // market pulse
+    const simple = state.uiMode === 'simple';
     const btcDom = state.globalData?.market_cap_percentage?.btc;
     const climate = Decision.marketClimate(state.fearGreed, btcDom);
+
+    // demo banner
+    const demoNote = state.isDemo ? `<div class="guard-banner" style="background:var(--blue-dim);border-color:rgba(91,157,255,0.3)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><div><strong>Portafoglio di esempio</strong> — questi non sono soldi veri. Servono per mostrarti come funziona. Quando vuoi, vai su "Gestisci posizioni" e inserisci le tue crypto reali.</div></div>` : '';
+    const demoSlot = document.getElementById('today-demo-slot');
+    if (demoSlot) demoSlot.innerHTML = demoNote;
+
+    // market pulse
     const marketEl = document.getElementById('today-market');
     if (marketEl) {
-      marketEl.innerHTML = `
-        <div class="metric"><div class="metric-label">Fear &amp; Greed</div><div class="metric-value" style="color:${fngColor(state.fearGreed?.value)}">${state.fearGreed ? state.fearGreed.value : '—'}</div><div class="metric-sub">${state.fearGreed ? fngLabel(state.fearGreed.classification) : '—'}</div></div>
-        <div class="metric"><div class="metric-label">BTC dominance</div><div class="metric-value num">${btcDom ? btcDom.toFixed(1) + '%' : '—'}</div></div>
-        <div class="metric"><div class="metric-label">Fase ciclo</div><div class="metric-value" style="font-size:15px">${climate.phase}</div></div>
-        <div class="metric"><div class="metric-label">Clima</div><div class="metric-value ${climate.climateCls}" style="font-size:15px">${climate.climate}</div></div>
-      `;
+      if (simple) {
+        const climateEmoji = state.fearGreed ? (state.fearGreed.value < 45 ? '😰' : state.fearGreed.value > 60 ? '🤑' : '😐') : '❓';
+        const advice = !state.fearGreed ? 'Premi aggiorna per vedere il clima' :
+          state.fearGreed.value < 30 ? 'Mercato spaventato — giornata da difensori, prudenza' :
+          state.fearGreed.value > 70 ? 'Mercato euforico — attenzione, spesso i prezzi sono gonfiati' :
+          'Mercato tranquillo — nessun eccesso particolare';
+        marketEl.style.gridTemplateColumns = '1fr';
+        marketEl.innerHTML = `<div class="metric" style="display:flex;align-items:center;gap:14px">
+          <span style="font-size:32px">${climateEmoji}</span>
+          <div><div style="font-family:var(--font-display);font-size:16px;font-weight:600">${climate.climate}</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:2px">${advice}</div></div></div>`;
+      } else {
+        marketEl.style.gridTemplateColumns = '';
+        marketEl.innerHTML = `
+          <div class="metric"><div class="metric-label">${term('Fear &amp; Greed','feargreed')}</div><div class="metric-value" style="color:${fngColor(state.fearGreed?.value)}">${state.fearGreed ? state.fearGreed.value : '—'}</div><div class="metric-sub">${state.fearGreed ? fngLabel(state.fearGreed.classification) : '—'}</div></div>
+          <div class="metric"><div class="metric-label">${term('BTC dominance','dominance')}</div><div class="metric-value num">${btcDom ? btcDom.toFixed(1) + '%' : '—'}</div></div>
+          <div class="metric"><div class="metric-label">Fase ciclo</div><div class="metric-value" style="font-size:15px">${climate.phase}</div></div>
+          <div class="metric"><div class="metric-label">Clima</div><div class="metric-value ${climate.climateCls}" style="font-size:15px">${climate.climate}</div></div>`;
+      }
     }
 
-    // banner summary
     const banner = document.getElementById('today-banner-title');
     const bannerSub = document.getElementById('today-banner-sub');
     const bannerIcon = document.getElementById('today-banner-icon');
-
-    // portfolio verdicts
     const verdictsEl = document.getElementById('today-verdicts');
+
     if (state.positions.length && state.scannerData.length) {
       const verdicts = state.positions.map(pos => {
         const data = state.scannerData.find(d => d.id === pos.id);
@@ -2859,51 +3222,67 @@ const App = (() => {
         return { pos, data, tr, v, value, pnlPct };
       }).filter(Boolean);
 
-      // sort: actions needing attention first (sell/reduce/buy before hold)
       const priority = { 'VENDI': 0, 'ALLEGGERISCI': 1, 'AUMENTA': 2, 'TIENI': 3 };
       verdicts.sort((a, b) => (priority[a.v.action] ?? 9) - (priority[b.v.action] ?? 9));
-
       const actionable = verdicts.filter(x => x.v.action !== 'TIENI').length;
 
-      if (banner) banner.textContent = actionable > 0 ? `${actionable} ${actionable === 1 ? 'azione consigliata' : 'azioni consigliate'} oggi` : 'Portafoglio stabile';
-      if (bannerSub) bannerSub.textContent = actionable > 0 ? 'Controlla i suggerimenti qui sotto.' : 'Nessun movimento urgente sui tuoi asset.';
+      if (banner) banner.textContent = actionable > 0 ? `${actionable} ${actionable === 1 ? 'cosa da guardare' : 'cose da guardare'} oggi` : 'Tutto tranquillo';
+      if (bannerSub) bannerSub.textContent = actionable > 0 ? 'Dai un\'occhiata ai suggerimenti qui sotto.' : 'Nessun movimento urgente. Va benissimo così — anche non fare niente è una scelta.';
       if (bannerIcon) bannerIcon.style.background = actionable > 0 ? 'var(--amber-dim)' : 'var(--teal-dim)';
 
-      verdictsEl.innerHTML = verdicts.map((x, i) => {
-        const color = PALETTE[i % PALETTE.length];
-        return `
-        <div class="verdict-row">
-          <div class="verdict-coin">
-            <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${x.data.symbol.slice(0,3)}</div>
-            <div class="verdict-info">
-              <div class="verdict-name">${x.data.name}</div>
-              <div class="verdict-meta">
-                <span>Score <strong class="${scoreClass(x.data.signals.composite)}">${x.data.signals.composite}</strong></span>
-                ${trendArrow(x.tr.direction, x.tr.delta)}
-                ${x.pnlPct != null ? `<span class="num" style="color:${x.pnlPct >= 0 ? 'var(--teal)' : 'var(--coral)'}">${fmtPct(x.pnlPct)}</span>` : ''}
+      if (simple) {
+        verdictsEl.innerHTML = verdicts.map(x => {
+          const h = ACTION_HUMAN[x.v.action];
+          const micro = x.data.mcap > 0 && x.data.mcap < 5e7;
+          return `
+          <div class="simple-verdict" style="background:${h.color}0f">
+            <span class="simple-verdict-emoji">${h.emoji}</span>
+            <div class="simple-verdict-body">
+              <div class="simple-verdict-coin">${x.data.name} ${micro ? '<span class="badge badge-red" style="font-size:9px">alto rischio</span>' : ''}</div>
+              <div class="simple-verdict-action" style="color:${h.color}">${h.simple}</div>
+              <div class="simple-verdict-why">${humanScore(x.data.signals.composite)} e ${humanTrend(x.tr.direction)}${x.pnlPct != null ? ` · sei ${x.pnlPct >= 0 ? 'in guadagno' : 'in perdita'} del ${Math.abs(x.pnlPct).toFixed(0)}%` : ''}</div>
+            </div>
+          </div>`;
+        }).join('');
+      } else {
+        verdictsEl.innerHTML = verdicts.map((x, i) => {
+          const color = PALETTE[i % PALETTE.length];
+          return `
+          <div class="verdict-row">
+            <div class="verdict-coin">
+              <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${x.data.symbol.slice(0,3)}</div>
+              <div class="verdict-info">
+                <div class="verdict-name">${x.data.name}</div>
+                <div class="verdict-meta">
+                  <span>${term('Score','score')} <strong class="${scoreClass(x.data.signals.composite)}">${x.data.signals.composite}</strong></span>
+                  ${trendArrow(x.tr.direction, x.tr.delta)}
+                  ${x.pnlPct != null ? `<span class="num" style="color:${x.pnlPct >= 0 ? 'var(--teal)' : 'var(--coral)'}">${fmtPct(x.pnlPct)}</span>` : ''}
+                </div>
               </div>
             </div>
-          </div>
-          <div class="verdict-action">
-            <span class="verdict-badge ${x.v.cls}">${x.v.action}</span>
-            <span class="verdict-reason">${x.v.reason}</span>
-          </div>
-        </div>`;
-      }).join('');
+            <div class="verdict-action">
+              <span class="verdict-badge ${x.v.cls}">${x.v.action}</span>
+              <span class="verdict-reason">${x.v.reason}</span>
+            </div>
+          </div>`;
+        }).join('');
+      }
     } else if (state.positions.length && !state.scannerData.length) {
-      if (banner) banner.textContent = 'Premi "Aggiorna segnali"';
-      if (bannerSub) bannerSub.textContent = 'Hai posizioni inserite ma i segnali non sono ancora caricati.';
-      verdictsEl.innerHTML = `<div class="empty-state"><p>Premi <strong>Aggiorna segnali</strong> per analizzare le tue ${state.positions.length} posizioni.</p></div>`;
+      if (banner) banner.textContent = simple ? 'Carichiamo i tuoi dati' : 'Premi "Aggiorna segnali"';
+      if (bannerSub) bannerSub.textContent = 'Un attimo e ci siamo.';
+      verdictsEl.innerHTML = `<div class="empty-state"><p>Sto analizzando le tue ${state.positions.length} posizioni...</p><button class="btn-primary" onclick="App.refreshToday()">Aggiorna ora</button></div>`;
     } else {
+      if (banner) banner.textContent = 'Iniziamo';
+      if (bannerSub) bannerSub.textContent = 'Aggiungi le tue crypto per ricevere indicazioni.';
       verdictsEl.innerHTML = `
         <div class="empty-state">
           <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"></path></svg>
-          <p>Non hai ancora inserito le tue posizioni.<br>Aggiungile per ricevere indicazioni operative.</p>
-          <button class="btn-primary" onclick="App.showPage('positions')">Aggiungi posizioni</button>
+          <p>Non hai ancora inserito le tue crypto.<br>Aggiungile per ricevere indicazioni su misura.</p>
+          <button class="btn-primary" onclick="App.showPage('positions')">Aggiungi le mie crypto</button>
         </div>`;
     }
 
-    // opportunities (watchlist coins NOT owned, with strong signals)
+    // opportunities
     const owned = new Set(state.positions.map(p => p.id));
     const opps = state.scannerData
       .filter(d => !owned.has(d.id) && d.signals)
@@ -2920,27 +3299,41 @@ const App = (() => {
     const oppsEl = document.getElementById('today-opps');
     if (opps.length) {
       oppsCard.style.display = 'block';
-      oppsEl.innerHTML = opps.map((x, i) => {
-        const color = PALETTE[i % PALETTE.length];
-        return `
-        <div class="verdict-row">
-          <div class="verdict-coin">
-            <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${x.d.symbol.slice(0,3)}</div>
-            <div class="verdict-info">
-              <div class="verdict-name">${x.d.name}</div>
-              <div class="verdict-meta">
-                <span>Score <strong class="${scoreClass(x.d.signals.composite)}">${x.d.signals.composite}</strong></span>
-                ${trendArrow(x.tr.direction, x.tr.delta)}
-                <span class="num">${x.d.price ? fmtEur(x.d.price) : ''}</span>
+      if (simple) {
+        oppsEl.innerHTML = opps.map(x => {
+          const h = ACTION_HUMAN[x.v.action];
+          const micro = x.d.mcap > 0 && x.d.mcap < 5e7;
+          return `<div class="simple-verdict" style="background:${h.color}0f">
+            <span class="simple-verdict-emoji">${h.emoji}</span>
+            <div class="simple-verdict-body">
+              <div class="simple-verdict-coin">${x.d.name} ${micro ? '<span class="badge badge-red" style="font-size:9px">alto rischio</span>' : ''}</div>
+              <div class="simple-verdict-action" style="color:${h.color}">${h.simple}</div>
+              <div class="simple-verdict-why">${humanScore(x.d.signals.composite)} e ${humanTrend(x.tr.direction)}</div>
+            </div></div>`;
+        }).join('');
+      } else {
+        oppsEl.innerHTML = opps.map((x, i) => {
+          const color = PALETTE[i % PALETTE.length];
+          return `
+          <div class="verdict-row">
+            <div class="verdict-coin">
+              <div class="coin-avatar" style="background:${color}1f;color:${color};width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${x.d.symbol.slice(0,3)}</div>
+              <div class="verdict-info">
+                <div class="verdict-name">${x.d.name}</div>
+                <div class="verdict-meta">
+                  <span>${term('Score','score')} <strong class="${scoreClass(x.d.signals.composite)}">${x.d.signals.composite}</strong></span>
+                  ${trendArrow(x.tr.direction, x.tr.delta)}
+                  <span class="num">${x.d.price ? fmtEur(x.d.price) : ''}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="verdict-action">
-            <span class="verdict-badge ${x.v.cls}">${x.v.action}</span>
-            <span class="verdict-reason">${x.v.reason}</span>
-          </div>
-        </div>`;
-      }).join('');
+            <div class="verdict-action">
+              <span class="verdict-badge ${x.v.cls}">${x.v.action}</span>
+              <span class="verdict-reason">${x.v.reason}</span>
+            </div>
+          </div>`;
+        }).join('');
+      }
     } else {
       oppsCard.style.display = 'none';
     }
@@ -3222,7 +3615,8 @@ const App = (() => {
     openBacktestFor, addToWatchlist, toggleBtSig,
     setDiscoSource, selectCategory, runDiscovery,
     toggleDiscoDetail, addDiscoCoin,
-    refreshToday, addPosition, removePosition, renderPositions, setProfile
+    refreshToday, addPosition, removePosition, renderPositions, setProfile,
+    onbNext, onbPick, onbSkip, onbFinish, setMode, showGlossary
   };
 })();
 
